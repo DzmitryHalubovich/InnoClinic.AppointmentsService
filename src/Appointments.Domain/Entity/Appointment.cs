@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Appointments.Domain.Entity
 {
@@ -15,10 +16,17 @@ namespace Appointments.Domain.Entity
         [Required]
         public int ServiceId { get; set; }
 
+        [Required]
+        public string OfficeId { get; set; } = null!;
+
+        [Required]
+        public int SpecializationId { get; set; }
+
         public DateTime AppointmentDate { get; set; }
 
-        public TimeSpan TimeSlot { get; set; }
+        public int TimeSlot { get; set; }
 
+        [DefaultValue(false)]
         public bool IsApproved { get; set; }
     }
 }

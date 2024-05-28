@@ -4,33 +4,19 @@ using Appointments.Domain.Entity;
 using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Services.Abstraction;
+using AutoMapper;
 
 namespace Appointments.Services;
 
 public class AppointmentsService : IAppointmentsService
 {
     private readonly IAppointmentsRepository _appointmentsRepository;
+    private readonly IMapper _mapper;
 
-    public AppointmentsService(IAppointmentsRepository appointmentsRepository)
+    public AppointmentsService(IAppointmentsRepository appointmentsRepository, IMapper mapper)
     {
         _appointmentsRepository = appointmentsRepository;
-    }
-
-    public async Task<Guid> CreateAppointmentAsync(AppointmentCreateDTO newAppointment)
-    {
-        var appointment = new Appointment()
-        {
-            PatientId = newAppointment.PatientId,
-            DoctorId = newAppointment.DoctorId,
-            ServiceId = newAppointment.ServiceId,
-            AppointmentDate = newAppointment.AppointmentDate,
-            TimeSlot = TimeSpan.FromMinutes(newAppointment.TimeSlot),
-            IsApproved = false
-        };
-
-        var appointmentGuid = await _appointmentsRepository.CreateAsync(appointment);
-
-        return appointmentGuid;
+        _mapper = mapper;
     }
 
     public async Task<AppointmentResponseDTO> GetAppointmentByIdAsync(Guid id)
@@ -42,16 +28,7 @@ public class AppointmentsService : IAppointmentsService
             throw new NotFoundException($"Appointment with id: {id} was not found in the database.");
         }
 
-        var appointmentResponseDTO = new AppointmentResponseDTO()
-        {
-            Id = appointment.Id,
-            PatientId = appointment.PatientId,
-            DoctorId = appointment.DoctorId,
-            ServiceId = appointment.ServiceId,
-            AppointmentDate = appointment.AppointmentDate,
-            TimeSlot = appointment.TimeSlot,
-            IsApproved = appointment.IsApproved
-        };
+        var appointmentResponseDTO = _mapper.Map<AppointmentResponseDTO>(appointment);
 
         return appointmentResponseDTO;
     }
@@ -65,18 +42,32 @@ public class AppointmentsService : IAppointmentsService
             throw new NotFoundException("There are not any appointments in the database.");
         }
 
-        var mappedAppointments = appointments.Select(x => new AppointmentResponseDTO()
-        {
-            Id = x.Id,
-            PatientId = x.PatientId,
-            DoctorId = x.DoctorId,
-            ServiceId = x.ServiceId,
-            AppointmentDate = x.AppointmentDate,
-            IsApproved = x.IsApproved,
-            TimeSlot = x.TimeSlot
-        });
+        var mappedAppointments = _mapper.Map<List<AppointmentResponseDTO>>(appointments);
 
         return mappedAppointments;
+    }
+
+    public async Task<Guid> CreateAppointmentAsync(AppointmentCreateDTO newAppointment)
+    {
+        var appointment = _mapper.Map<Appointment>(newAppointment);
+
+        var appointmentGuid = await _appointmentsRepository.CreateAsync(appointment);
+
+        return appointmentGuid;
+    }
+
+    public async Task UpdateAppointmentAsync(Guid id, AppointmentUpdateDTO updatedAppointment)
+    {
+        var appointment = await _appointmentsRepository.GetByIdAsync(id);
+
+        if (appointment is null)
+        {
+            throw new NotFoundException($"Appointment with id: {id} was not found in the database.");
+        }
+
+        _mapper.Map(updatedAppointment, appointment);
+
+        await _appointmentsRepository.UpdateAsync(appointment);
     }
 
     public async Task DeleteAppointmentAsync(Guid id)
@@ -101,22 +92,5 @@ public class AppointmentsService : IAppointmentsService
         }
 
         await _appointmentsRepository.ApproveAsync(appointment.Id);
-    }
-
-    public async Task UpdateAppointmentAsync(Guid id, AppointmentUpdateDTO updatedAppointment)
-    {
-        var appointment = await _appointmentsRepository.GetByIdAsync(id);
-
-        if (appointment is null)
-        {
-            throw new NotFoundException($"Appointment with id: {id} was not found in the database.");
-        }
-
-        appointment.DoctorId = updatedAppointment.DoctorId;
-        appointment.ServiceId = updatedAppointment.ServiceId;
-        appointment.AppointmentDate = updatedAppointment.AppointmentDate;
-        appointment.TimeSlot = TimeSpan.FromMinutes(updatedAppointment.TimeSlot);
-
-        await _appointmentsRepository.UpdateAsync(appointment);
     }
 }

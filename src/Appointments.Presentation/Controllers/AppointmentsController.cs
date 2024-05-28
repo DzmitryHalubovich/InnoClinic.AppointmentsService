@@ -1,6 +1,7 @@
 ﻿using Appointments.Contracts;
 using Appointments.Contracts.DTO;
 using Appointments.Services.Abstraction;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Appointments.Presentation.Controllers;
@@ -17,6 +18,9 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpGet]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllAppointments([FromQuery] QueryParameters queryParameters)
     {
         var appointments = await _appointmentsService.GetAllAppointmentsAsync(queryParameters);
@@ -24,7 +28,10 @@ public class AppointmentsController : ControllerBase
         return Ok(appointments);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetAppointmentById")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAppointmentById([FromRoute] Guid id)
     {
         var appointment = await _appointmentsService.GetAppointmentByIdAsync(id);
@@ -33,22 +40,31 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> GetAllAppointments([FromBody] AppointmentCreateDTO newAppointment)
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreateDTO newAppointment)
     {
         var createdAppointmentGuid = await _appointmentsService.CreateAppointmentAsync(newAppointment);
 
-        return Ok(createdAppointmentGuid);
+        return CreatedAtRoute("GetAppointmentById", new { id = createdAppointmentGuid }, createdAppointmentGuid);
     }
 
     [HttpPut("{id}")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateAppointment([FromRoute] Guid id, [FromBody] AppointmentUpdateDTO updatedAppointment)
     {
         await _appointmentsService.UpdateAppointmentAsync(id, updatedAppointment);
 
-        return Ok();
+        return NoContent();
     }
 
     [HttpPatch("{id}")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ApproveAppointment([FromRoute] Guid id)
     {
         await _appointmentsService.ApproveAppointmentAsync(id);
@@ -57,6 +73,9 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAppointment([FromRoute] Guid id)
     {
         await _appointmentsService.DeleteAppointmentAsync(id);

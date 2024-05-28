@@ -8,6 +8,10 @@ public class AppointmentCreateDTO
 
     public int ServiceId { get; set; }
 
+    public string OfficeId { get; set; }
+
+    public int SpecializationId { get; set; }
+
     public Guid PatientId { get; set; }
 
     public Guid DoctorId { get; set; }

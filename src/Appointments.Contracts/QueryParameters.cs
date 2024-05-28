@@ -6,9 +6,9 @@ public class QueryParameters
 
     public int? ServiceId { get; set; } = null;
 
+    public Guid? PatientId { get; set; } = null;
+
     public string? OfficeId { get; set; } = null;
 
-    public bool? OnlyApproved { get; set; } = null;
-
-    public DateOnly? AppointmentDate { get; set; } = null;
+    public bool? OnlyApproved { get; set; } = false;
 }

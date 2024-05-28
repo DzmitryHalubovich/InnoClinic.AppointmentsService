@@ -12,9 +12,13 @@ public class AppointmentResponseDTO
 
     public int ServiceId { get; set; }
 
+    public string OfficeId { get; set; }
+
+    public int SpecializationId { get; set; }
+
     public DateTime AppointmentDate { get; set; }
 
-    public TimeSpan TimeSlot { get; set; }
+    public int TimeSlot { get; set; }
 
     public bool IsApproved { get; set; }
 }
