@@ -4,10 +4,13 @@ using Appointments.Infrastructure.Data;
 using Appointments.Infrastructure.Repositories;
 using Appointments.Services;
 using Appointments.Services.Abstraction;
+using Appointments.Services.Abstractions.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();
+builder.Services.AddScoped<IAppointmentResultsService, AppointmentResultsService>();
 builder.Services.AddAutoMapper(typeof(MapperProfile));
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

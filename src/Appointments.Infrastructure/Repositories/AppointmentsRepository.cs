@@ -73,9 +73,9 @@ public class AppointmentsRepository : IAppointmentsRepository
 
         using (var connection = _context.CreateConnection())
         {
-            var id = await connection.QuerySingleAsync<Guid>(query, appointment);
+            var createdAppointmentId = await connection.QuerySingleAsync<Guid>(query, appointment);
 
-            return id;
+            return createdAppointmentId;
         }
     }
 

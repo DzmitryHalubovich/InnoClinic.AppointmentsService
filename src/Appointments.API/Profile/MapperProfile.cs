@@ -11,5 +11,12 @@ public class MapperProfile : Profile
         CreateMap<AppointmentUpdateDTO, Appointment>();
 
         CreateMap<Appointment, AppointmentResponseDTO>();
+
+        CreateMap<AppointmentResultCreateDTO, AppointmentResult>();
+
+        CreateMap<AppointmentResult, AppointmentResultResponseDTO>()
+            .ForMember(dest => dest.AppointmentResponseDTO, opt => opt.MapFrom(src => src.Appointment));
+
+        CreateMap<AppointmentResultUpdateDTO, AppointmentResult>();
     }
 }
