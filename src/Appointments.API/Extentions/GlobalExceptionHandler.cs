@@ -19,7 +19,6 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         var excDetails = exception switch
         {
-            //ValidationAppException => (Detail: exception.Message, StatusCode: StatusCodes.Status422UnprocessableEntity),
             NotFoundException => (Detail: exception.Message, StatusCode: StatusCodes.Status404NotFound),
             _ => (Detail: exception.Message, StatusCode: StatusCodes.Status500InternalServerError)
         };

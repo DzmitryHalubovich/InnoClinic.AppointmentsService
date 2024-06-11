@@ -93,4 +93,9 @@ public class AppointmentsService : IAppointmentsService
 
         await _appointmentsRepository.ApproveAsync(appointment.Id);
     }
+
+    public async Task DeleteEveryAppointmentForDeletedServiceAsync(int serviceId)
+    {
+        await _appointmentsRepository.DeleteAllForDeletedServiceAsync(serviceId);
+    }
 }

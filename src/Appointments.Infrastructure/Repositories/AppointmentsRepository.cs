@@ -56,11 +56,11 @@ public class AppointmentsRepository : IAppointmentsRepository
     public async Task<Appointment?> GetByIdAsync(Guid id)
     {
         var query = "SELECT * FROM Appointments " +
-                    "WHERE Id = @Id";
+                    "WHERE Id = @id";
 
         using (var connection = _context.CreateConnection())
         {
-            var appointment = await connection.QuerySingleOrDefaultAsync<Appointment>(query, new { Id = id });
+            var appointment = await connection.QuerySingleOrDefaultAsync<Appointment>(query, new { id });
 
             return appointment;
         }
@@ -82,11 +82,11 @@ public class AppointmentsRepository : IAppointmentsRepository
     public async Task DeleteAsync(Guid id)
     {
         var query = "DELETE FROM Appointments " +
-                    "WHERE Id = @Id";
+                    "WHERE Id = @id";
 
         using (var connection = _context.CreateConnection())
         {
-            await connection.QueryAsync(query, new { Id = id });
+            await connection.QueryAsync(query, new { id });
         }
     }
 
@@ -108,11 +108,22 @@ public class AppointmentsRepository : IAppointmentsRepository
     {
         var query = "UPDATE Appointments " +
                     "SET IsApproved = true " +
-                    "WHERE Id = @Id";
+                    "WHERE Id = @id";
 
         using (var connection = _context.CreateConnection())
         {
-            await connection.QueryAsync(query, new { Id = id });
+            await connection.QueryAsync(query, new { id });
+        }
+    }
+
+    public async Task DeleteAllForDeletedServiceAsync(int serviceId)
+    {
+        var query = "DELETE FROM Appointments " +
+                    "WHERE ServiceId = @serviceId";
+
+        using (var connection = _context.CreateConnection())
+        {
+            await connection.QueryAsync(query, new { serviceId });
         }
     }
 }

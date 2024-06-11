@@ -1,8 +1,7 @@
 ﻿using Appointments.Contracts.DTO;
 using Appointments.Services.Abstractions.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PdfSharp.Drawing;
-using PdfSharp.Pdf;
 
 namespace Appointments.Presentation.Controllers;
 
@@ -18,6 +17,9 @@ public class AppointmentResultsController : ControllerBase
     }
 
     [HttpGet("{id}", Name = "GetResultById")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetResultById([FromRoute] Guid id)
     {
         var appointmentResult = await _appointmentResultsService.GetAppintmentResultByIdAsync(id);
@@ -26,6 +28,8 @@ public class AppointmentResultsController : ControllerBase
     }
 
     [HttpPost]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAppointmentResult([FromBody] AppointmentResultCreateDTO newResult)
     {
         var createdResultId = await _appointmentResultsService.CreateAppointmentResultAsync(newResult);
@@ -34,6 +38,9 @@ public class AppointmentResultsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateResult([FromRoute] Guid id, [FromBody] AppointmentResultUpdateDTO updatedResult)
     {
         await _appointmentResultsService.UpdateAppointmentResultAsync(id, updatedResult);
@@ -42,6 +49,9 @@ public class AppointmentResultsController : ControllerBase
     }
 
     [Route("{id}/download")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet]
     public async Task<IActionResult> DownloadAppointmentResult([FromRoute] Guid id)
     {

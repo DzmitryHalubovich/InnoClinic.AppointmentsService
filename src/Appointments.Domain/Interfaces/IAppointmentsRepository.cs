@@ -16,4 +16,6 @@ public interface IAppointmentsRepository
     public Task ApproveAsync(Guid id);
 
     public Task DeleteAsync(Guid id);
+
+    public Task DeleteAllForDeletedServiceAsync(int serviceId);
 }

@@ -15,4 +15,6 @@ public interface IAppointmentsService
     public Task ApproveAppointmentAsync(Guid id);
 
     public Task DeleteAppointmentAsync(Guid id);
+
+    public Task DeleteEveryAppointmentForDeletedServiceAsync(int serviceId);
 }
