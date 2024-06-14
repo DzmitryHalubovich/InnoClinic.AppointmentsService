@@ -1,4 +1,4 @@
-﻿using Appointments.Contracts.DTO;
+﻿using Appointments.Contracts.DTO.Result;
 using Appointments.Services.Abstractions.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -46,19 +46,5 @@ public class AppointmentResultsController : ControllerBase
         await _appointmentResultsService.UpdateAppointmentResultAsync(id, updatedResult);
 
         return NoContent();
-    }
-
-    [Route("{id}/download")]
-    [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [HttpGet]
-    public async Task<IActionResult> DownloadAppointmentResult([FromRoute] Guid id)
-    {
-        var appointmentResult = await _appointmentResultsService.GetAppintmentResultByIdAsync(id);
-
-        var pdfBytes = _appointmentResultsService.GeneratePdfFile(appointmentResult);
-
-        return File(pdfBytes, "application/pdf", "FileName.pdf");
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Appointments.Contracts;
-using Appointments.Contracts.DTO;
+using Appointments.Contracts.DTO.Appointment;
 using Appointments.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

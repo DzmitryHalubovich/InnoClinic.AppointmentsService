@@ -1,5 +1,5 @@
 ﻿using Appointments.Contracts;
-using Appointments.Contracts.DTO;
+using Appointments.Contracts.DTO.Appointment;
 using Appointments.Domain.Entity;
 using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;

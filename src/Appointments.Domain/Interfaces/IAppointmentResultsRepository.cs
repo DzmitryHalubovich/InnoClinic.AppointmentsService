@@ -9,4 +9,6 @@ public interface IAppointmentResultsRepository
     public Task<Guid> CreateAsync(AppointmentResult appointment);
 
     public Task UpdateAsync(AppointmentResult appointmentResult);
+
+    public Task DeleteAsync(Guid id);
 }

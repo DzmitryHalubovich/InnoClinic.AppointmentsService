@@ -1,5 +1,5 @@
 ﻿using Appointments.Contracts;
-using Appointments.Contracts.DTO;
+using Appointments.Contracts.DTO.Appointment;
 namespace Appointments.Services.Abstraction;
 
 public interface IAppointmentsService

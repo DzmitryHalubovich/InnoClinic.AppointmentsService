@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Appointments.Contracts.DTO;
+namespace Appointments.Contracts.DTO.Appointment;
 
 public class AppointmentResponseDTO
 {

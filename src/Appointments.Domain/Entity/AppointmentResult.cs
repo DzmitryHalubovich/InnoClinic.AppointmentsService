@@ -10,7 +10,7 @@ public class AppointmentResult
 
     public string Conclusion { get; set; }
 
-    public string Recomendations { get; set; }
+    public string Recommendations { get; set; }
 
-    public Appointment Appointment { get; set; }
+    public DateTime AppointmentDate { get; set; }
 }

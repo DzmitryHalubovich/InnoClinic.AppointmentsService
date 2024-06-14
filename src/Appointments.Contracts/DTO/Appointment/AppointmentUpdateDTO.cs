@@ -1,7 +1,9 @@
-﻿namespace Appointments.Contracts.DTO;
+﻿namespace Appointments.Contracts.DTO.Appointment;
 
-public class AppointmentCreateDTO
+public class AppointmentUpdateDTO
 {
+    public Guid DoctorId { get; set; }
+
     public DateTime AppointmentDate { get; set; }
 
     public int TimeSlot { get; set; }
@@ -11,9 +13,4 @@ public class AppointmentCreateDTO
     public string OfficeId { get; set; }
 
     public int SpecializationId { get; set; }
-
-    public Guid PatientId { get; set; }
-
-    public Guid DoctorId { get; set; }
-
 }

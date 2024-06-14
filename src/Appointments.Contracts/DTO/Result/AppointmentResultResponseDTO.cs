@@ -1,4 +1,4 @@
-﻿namespace Appointments.Contracts.DTO;
+﻿namespace Appointments.Contracts.DTO.Result;
 
 public class AppointmentResultResponseDTO
 {
@@ -10,7 +10,7 @@ public class AppointmentResultResponseDTO
 
     public string Conclusion { get; set; }
 
-    public string Recomendations { get; set; }
+    public string Recommendations { get; set; }
 
-    public AppointmentResponseDTO AppointmentResponseDTO { get; set; }
+    public DateTime AppointmentDate { get; set; }
 }

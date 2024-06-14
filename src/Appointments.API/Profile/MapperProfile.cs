@@ -1,4 +1,5 @@
-﻿using Appointments.Contracts.DTO;
+﻿using Appointments.Contracts.DTO.Appointment;
+using Appointments.Contracts.DTO.Result;
 using Appointments.Domain.Entity;
 using AutoMapper;
 
@@ -14,8 +15,7 @@ public class MapperProfile : Profile
 
         CreateMap<AppointmentResultCreateDTO, AppointmentResult>();
 
-        CreateMap<AppointmentResult, AppointmentResultResponseDTO>()
-            .ForMember(dest => dest.AppointmentResponseDTO, opt => opt.MapFrom(src => src.Appointment));
+        CreateMap<AppointmentResult, AppointmentResultResponseDTO>();
 
         CreateMap<AppointmentResultUpdateDTO, AppointmentResult>();
     }
