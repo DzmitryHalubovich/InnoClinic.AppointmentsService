@@ -11,6 +11,10 @@ namespace Appointments.Domain.Entity
         public Guid PatientId { get; set; }
 
         [Required]
+        [EmailAddress]
+        public string PatientEmail { get; set; } = null!;
+
+        [Required]
         public Guid DoctorId { get; set; }
 
         [Required]
@@ -28,5 +32,8 @@ namespace Appointments.Domain.Entity
 
         [DefaultValue(false)]
         public bool IsApproved { get; set; }
+
+        [DefaultValue(false)]
+        public bool NotificationIsSent { get; set; }
     }
 }

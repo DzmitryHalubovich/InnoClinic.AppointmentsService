@@ -9,7 +9,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace Appointments.Services;
+namespace Appointments.Services.Services;
 
 public class AppointmentResultsService : IAppointmentResultsService
 {
@@ -17,7 +17,7 @@ public class AppointmentResultsService : IAppointmentResultsService
     private readonly IMapper _mapper;
     private readonly DocumentsRepository _documentsRepository;
 
-    public AppointmentResultsService(IAppointmentResultsRepository appointmentResultsRepository, IMapper mapper, 
+    public AppointmentResultsService(IAppointmentResultsRepository appointmentResultsRepository, IMapper mapper,
         DocumentsRepository documentsRepository)
     {
         _appointmentResultsRepository = appointmentResultsRepository;
@@ -60,7 +60,7 @@ public class AppointmentResultsService : IAppointmentResultsService
 
         var mappedResult = _mapper.Map<AppointmentResultResponseDTO>(appointmentResult);
 
-        return mappedResult;    
+        return mappedResult;
     }
 
     public async Task UpdateAppointmentResultAsync(Guid id, AppointmentResultUpdateDTO updatedAppointmentResult)

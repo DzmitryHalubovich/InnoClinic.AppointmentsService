@@ -6,7 +6,7 @@ using Appointments.Domain.Interfaces;
 using Appointments.Services.Abstraction;
 using AutoMapper;
 
-namespace Appointments.Services;
+namespace Appointments.Services.Services;
 
 public class AppointmentsService : IAppointmentsService
 {

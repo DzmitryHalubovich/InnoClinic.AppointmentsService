@@ -53,6 +53,19 @@ public class AppointmentsRepository : IAppointmentsRepository
         }
     }
 
+    public async Task<IEnumerable<Appointment>> GetAllApprovedForNotitfication()
+    {
+        var query = "SELECT * FROM Appointments a " +
+                    "WHERE a.IsApproved = true and a.NotificationIsSent = false";
+
+        using (var connection = _context.CreateConnection())
+        {
+            var appointments = await connection.QueryAsync<Appointment>(query);
+
+            return appointments;
+        }
+    }
+
     public async Task<Appointment?> GetByIdAsync(Guid id)
     {
         var query = "SELECT * FROM Appointments " +
@@ -68,8 +81,8 @@ public class AppointmentsRepository : IAppointmentsRepository
 
     public async Task<Guid> CreateAsync(Appointment appointment)
     {
-        var query = "INSERT INTO Appointments (PatientId, DoctorId, ServiceId, OfficeId, SpecializationId, AppointmentDate, TimeSlot)" +
-                    "VALUES(@PatientId, @DoctorId, @ServiceId, @OfficeId, @SpecializationId, @AppointmentDate, @TimeSlot)" + "RETURNING Id;";
+        var query = "INSERT INTO Appointments (PatientId, DoctorId, ServiceId, OfficeId, SpecializationId, AppointmentDate, TimeSlot, PatientEmail)" +
+                    "VALUES(@PatientId, @DoctorId, @ServiceId, @OfficeId, @SpecializationId, @AppointmentDate, @TimeSlot, @PatientEmail)" + "RETURNING Id;";
 
         using (var connection = _context.CreateConnection())
         {

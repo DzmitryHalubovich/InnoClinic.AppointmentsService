@@ -14,6 +14,7 @@ public class AppointmentCreateDTO
 
     public Guid PatientId { get; set; }
 
-    public Guid DoctorId { get; set; }
+    public string PatientEmail { get; set; }
 
+    public Guid DoctorId { get; set; }
 }

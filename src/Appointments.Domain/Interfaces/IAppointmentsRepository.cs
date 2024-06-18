@@ -7,6 +7,8 @@ public interface IAppointmentsRepository
 {
     public Task<IEnumerable<Appointment>> GetAllAsync(QueryParameters queryParameters);
 
+    public Task<IEnumerable<Appointment>> GetAllApprovedForNotitfication();
+
     public Task<Appointment?> GetByIdAsync(Guid id);
 
     public Task<Guid> CreateAsync(Appointment appointment);
