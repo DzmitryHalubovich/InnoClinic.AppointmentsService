@@ -19,5 +19,7 @@ public interface IAppointmentsRepository
 
     public Task DeleteAsync(Guid id);
 
+    public Task SetNotificationIsSent(IEnumerable<Appointment> appointments);
+
     public Task DeleteAllForDeletedServiceAsync(int serviceId);
 }

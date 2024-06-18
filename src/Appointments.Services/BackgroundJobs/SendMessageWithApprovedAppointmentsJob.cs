@@ -1,16 +1,19 @@
-﻿using Appointments.Contracts;
-using Appointments.Domain.Interfaces;
+﻿using Appointments.Domain.Interfaces;
 using Appointments.Services.Abstractions.BackgroundJobs;
+using Appointments.Services.Abstractions.RabbitMQ;
 
 namespace Appointments.Services.BackgroundJobs;
 
 public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAppointmentsJob
 {
     private readonly IAppointmentsRepository _appointmentsRepository;
+    private readonly IMessageProducer _messageProducer;
 
-    public SendMessageWithApprovedAppointmentsJob(IAppointmentsRepository appointmentsRepository)
+    public SendMessageWithApprovedAppointmentsJob(IAppointmentsRepository appointmentsRepository, 
+        IMessageProducer messageProducer)
     {
         _appointmentsRepository = appointmentsRepository;
+        _messageProducer = messageProducer;
     }
 
     public async void SendMessageWithAllApprovedAppointmentsToNotificationServer()
@@ -24,8 +27,14 @@ public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAp
             return;
         }
 
-        
+        _messageProducer.SendNotificateUsersMessage(approvedAppointments.Select(appointment => 
+            new AppointmentApprovedMessage()
+            {
+                AppointmentId = appointment.Id,
+                PatientEmail = appointment.PatientEmail,
+                AppointmentDate = appointment.AppointmentDate
+            }).ToList());
 
-
+        await _appointmentsRepository.SetNotificationIsSent(approvedAppointments);
     }
 }

@@ -139,4 +139,17 @@ public class AppointmentsRepository : IAppointmentsRepository
             await connection.QueryAsync(query, new { serviceId });
         }
     }
+
+    public async Task SetNotificationIsSent(IEnumerable<Appointment> appointments)
+    {
+        using (var connection = _context.CreateConnection())
+        {
+            var query = "UPDATE appointments SET NotificationIsSent = true WHERE Id = @Id";
+
+            foreach (var appointment in appointments)
+            {
+                await connection.ExecuteAsync(query, new { appointment.Id });
+            }
+        }
+    }
 }

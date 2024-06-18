@@ -5,10 +5,13 @@ using Appointments.Infrastructure.Repositories;
 using Appointments.Presentation.RabbitMQ;
 using Appointments.Services.Abstraction;
 using Appointments.Services.Abstractions.BackgroundJobs;
+using Appointments.Services.Abstractions.RabbitMQ;
 using Appointments.Services.Abstractions.Services;
 using Appointments.Services.BackgroundJobs;
+using Appointments.Services.RabbitMQ;
 using Appointments.Services.Services;
 using Hangfire;
+using PdfSharp.Charting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +21,8 @@ builder.Services.AddSingleton<RabbitListener>();
 builder.Services.AddHangfire(configuration =>
     configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireSQLConnection")));
 
+builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection());
+builder.Services.AddScoped<IMessageProducer, MessageProducer>();
 builder.Services.AddScoped<ISendMessageWithApprovedAppointmentsJob, SendMessageWithApprovedAppointmentsJob>();
 builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();
 builder.Services.AddScoped<IAppointmentResultsService, AppointmentResultsService>();
@@ -43,7 +48,7 @@ app.UseBackgroundJobs();
 
 app.UseHangfireDashboard();
 
-//app.UseRabbitListener();
+app.UseRabbitListener();
 
 app.UseExceptionHandler(opt => { });
 
