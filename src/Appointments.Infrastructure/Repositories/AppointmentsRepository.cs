@@ -53,7 +53,7 @@ public class AppointmentsRepository : IAppointmentsRepository
         }
     }
 
-    public async Task<IEnumerable<Appointment>> GetAllApprovedForNotitfication()
+    public async Task<IEnumerable<Appointment>> GetAllApprovedForNotitficationAsync()
     {
         var query = "SELECT * FROM Appointments a " +
                     "WHERE a.IsApproved = true and a.NotificationIsSent = false";
@@ -140,7 +140,7 @@ public class AppointmentsRepository : IAppointmentsRepository
         }
     }
 
-    public async Task SetNotificationIsSent(IEnumerable<Appointment> appointments)
+    public async Task SetNotificationIsSentAsync(IEnumerable<Appointment> appointments)
     {
         using (var connection = _context.CreateConnection())
         {

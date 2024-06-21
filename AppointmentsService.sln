@@ -11,15 +11,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointments.Domain", "src\Appointments.Domain\Appointments.Domain.csproj", "{0B9C5C29-194F-4050-BC5E-2374572B25EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Appointments.Contracts", "src\Appointments.Contracts\Appointments.Contracts.csproj", "{314F45E0-E18C-4056-A96B-90FE1FB2C01E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointments.Contracts", "src\Appointments.Contracts\Appointments.Contracts.csproj", "{314F45E0-E18C-4056-A96B-90FE1FB2C01E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Appointments.Services", "src\Appointments.Services\Appointments.Services.csproj", "{A948D5FE-617C-4314-A4F7-0D64E0330977}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointments.Services", "src\Appointments.Services\Appointments.Services.csproj", "{A948D5FE-617C-4314-A4F7-0D64E0330977}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Appointments.Services.Abstractions", "src\Appointments.Services.Abstractions\Appointments.Services.Abstractions.csproj", "{5DE26C0D-5C2F-46C5-9980-7AB3623FD1A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointments.Services.Abstractions", "src\Appointments.Services.Abstractions\Appointments.Services.Abstractions.csproj", "{5DE26C0D-5C2F-46C5-9980-7AB3623FD1A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Appointments.Infrastructure", "src\Appointments.Infrastructure\Appointments.Infrastructure.csproj", "{50A83C92-EED4-4408-8269-746A903BEAA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointments.Infrastructure", "src\Appointments.Infrastructure\Appointments.Infrastructure.csproj", "{50A83C92-EED4-4408-8269-746A903BEAA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Appointments.Presentation", "src\Appointments.Presentation\Appointments.Presentation.csproj", "{696AF3F9-5494-4384-AC37-0D12DA3A719A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointments.Presentation", "src\Appointments.Presentation\Appointments.Presentation.csproj", "{696AF3F9-5494-4384-AC37-0D12DA3A719A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointments.RabbitMQ", "src\Appointments.RabbitMQ\Appointments.RabbitMQ.csproj", "{CFB34DAD-F4B9-4663-9558-909FFAE51D05}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{696AF3F9-5494-4384-AC37-0D12DA3A719A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{696AF3F9-5494-4384-AC37-0D12DA3A719A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{696AF3F9-5494-4384-AC37-0D12DA3A719A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFB34DAD-F4B9-4663-9558-909FFAE51D05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFB34DAD-F4B9-4663-9558-909FFAE51D05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFB34DAD-F4B9-4663-9558-909FFAE51D05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFB34DAD-F4B9-4663-9558-909FFAE51D05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +72,7 @@ Global
 		{5DE26C0D-5C2F-46C5-9980-7AB3623FD1A6} = {69B9FCA7-D703-4870-92E1-22438F69EB90}
 		{50A83C92-EED4-4408-8269-746A903BEAA6} = {F57AB66E-06E0-4173-B64F-F71FC158FED3}
 		{696AF3F9-5494-4384-AC37-0D12DA3A719A} = {F57AB66E-06E0-4173-B64F-F71FC158FED3}
+		{CFB34DAD-F4B9-4663-9558-909FFAE51D05} = {F57AB66E-06E0-4173-B64F-F71FC158FED3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {389DC889-0B55-4FED-BCC3-A021A79443EB}

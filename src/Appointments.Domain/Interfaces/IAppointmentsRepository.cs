@@ -7,7 +7,7 @@ public interface IAppointmentsRepository
 {
     public Task<IEnumerable<Appointment>> GetAllAsync(QueryParameters queryParameters);
 
-    public Task<IEnumerable<Appointment>> GetAllApprovedForNotitfication();
+    public Task<IEnumerable<Appointment>> GetAllApprovedForNotitficationAsync();
 
     public Task<Appointment?> GetByIdAsync(Guid id);
 
@@ -19,7 +19,7 @@ public interface IAppointmentsRepository
 
     public Task DeleteAsync(Guid id);
 
-    public Task SetNotificationIsSent(IEnumerable<Appointment> appointments);
+    public Task SetNotificationIsSentAsync(IEnumerable<Appointment> appointments);
 
     public Task DeleteAllForDeletedServiceAsync(int serviceId);
 }

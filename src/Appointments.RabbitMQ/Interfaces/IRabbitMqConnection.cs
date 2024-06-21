@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace Appointments.Services.Abstractions.RabbitMQ;
+namespace Appointments.RabbitMQ.Interfaces;
 
 public interface IRabbitMqConnection
 {

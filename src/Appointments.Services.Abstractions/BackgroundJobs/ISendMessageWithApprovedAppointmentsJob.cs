@@ -2,5 +2,5 @@
 
 public interface ISendMessageWithApprovedAppointmentsJob
 {
-    public void SendMessageWithAllApprovedAppointmentsToNotificationServer();
+    public Task SendMessageWithAllApprovedAppointmentsToNotificationServer();
 }

@@ -1,6 +1,6 @@
 ﻿using Appointments.Domain.Interfaces;
+using Appointments.RabbitMQ.Interfaces;
 using Appointments.Services.Abstractions.BackgroundJobs;
-using Appointments.Services.Abstractions.RabbitMQ;
 using InnoClinic.SharedModels.MQMessages.Appointments;
 
 namespace Appointments.Services.BackgroundJobs;
@@ -8,18 +8,18 @@ namespace Appointments.Services.BackgroundJobs;
 public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAppointmentsJob
 {
     private readonly IAppointmentsRepository _appointmentsRepository;
-    private readonly IMessageProducer _messageProducer;
+    private readonly IPublisherServiceRabbitMq _publisherService;
 
     public SendMessageWithApprovedAppointmentsJob(IAppointmentsRepository appointmentsRepository, 
-        IMessageProducer messageProducer)
+        IPublisherServiceRabbitMq publisherService)
     {
         _appointmentsRepository = appointmentsRepository;
-        _messageProducer = messageProducer;
+        _publisherService = publisherService;
     }
 
-    public async void SendMessageWithAllApprovedAppointmentsToNotificationServer()
+    public async Task SendMessageWithAllApprovedAppointmentsToNotificationServer()
     {
-        var approvedAppointments = await _appointmentsRepository.GetAllApprovedForNotitfication();
+        var approvedAppointments = await _appointmentsRepository.GetAllApprovedForNotitficationAsync();
 
         Console.WriteLine("Elements count: " + approvedAppointments.Count());
 
@@ -28,7 +28,7 @@ public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAp
             return;
         }
 
-        _messageProducer.SendNotificateUsersMessage(approvedAppointments.Select(appointment => 
+        _publisherService.Publish(approvedAppointments.Select(appointment => 
             new AppointmentApprovedMessage()
             {
                 AppointmentId = appointment.Id,
@@ -36,6 +36,6 @@ public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAp
                 AppointmentDate = appointment.AppointmentDate
             }).ToList());
 
-        await _appointmentsRepository.SetNotificationIsSent(approvedAppointments);
+        await _appointmentsRepository.SetNotificationIsSentAsync(approvedAppointments);
     }
 }
