@@ -16,7 +16,7 @@ public class RabbitMqConnection : IRabbitMqConnection, IDisposable
 
     public void Dispose()
     {
-        throw new NotImplementedException();
+        _connection?.Dispose();
     }
 
     private void InitializeConnection()
@@ -40,5 +40,7 @@ public class RabbitMqConnection : IRabbitMqConnection, IDisposable
                              exclusive: false,
                              autoDelete: false,
                              arguments: null);
+
+
     }
 }

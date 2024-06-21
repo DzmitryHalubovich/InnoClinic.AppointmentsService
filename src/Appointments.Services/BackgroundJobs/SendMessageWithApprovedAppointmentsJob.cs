@@ -1,6 +1,7 @@
 ﻿using Appointments.Domain.Interfaces;
 using Appointments.Services.Abstractions.BackgroundJobs;
 using Appointments.Services.Abstractions.RabbitMQ;
+using InnoClinic.SharedModels.MQMessages.Appointments;
 
 namespace Appointments.Services.BackgroundJobs;
 

@@ -1,4 +1,5 @@
 ﻿using Appointments.Services.Abstractions.RabbitMQ;
+using InnoClinic.SharedModels.MQMessages.Appointments;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;

@@ -1,4 +1,6 @@
-﻿namespace Appointments.Services.Abstractions.RabbitMQ;
+﻿using InnoClinic.SharedModels.MQMessages.Appointments;
+
+namespace Appointments.Services.Abstractions.RabbitMQ;
 
 public interface IMessageProducer 
 {

@@ -1,4 +1,5 @@
 ﻿using Appointments.Services.Abstraction;
+using Appointments.Services.Abstractions.RabbitMQ;
 using InnoClinic.SharedModels.MQMessages.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -9,16 +10,18 @@ namespace Appointments.Presentation.RabbitMQ;
 public class RabbitListener
 {
     private readonly IAppointmentsService _appointmentsService;
-    private ConnectionFactory _connectionFactory;
-    private IConnection _connection;
+    //private ConnectionFactory _connectionFactory;
+    //private IConnection _connection;
+    private readonly IRabbitMqConnection _rabbitMqConnection;
     private IModel _channel;
 
-    public RabbitListener(IAppointmentsService appointmentsService)
+    public RabbitListener(IAppointmentsService appointmentsService, IRabbitMqConnection rabbitMqConnection)
     {
         _appointmentsService = appointmentsService;
-        _connectionFactory = new ConnectionFactory { HostName = "localhost" };
-        _connection = _connectionFactory.CreateConnection();
-        _channel = _connection.CreateModel();
+        //_connectionFactory = new ConnectionFactory { HostName = "localhost" };
+        //_connection = _connectionFactory.CreateConnection();
+        _rabbitMqConnection = rabbitMqConnection;
+        _channel = _rabbitMqConnection.Connection.CreateModel();
     }
 
     public void Register()
@@ -30,7 +33,8 @@ public class RabbitListener
     public void Deregister()
     {
         _channel.Close();
-        _connection.Close();
+        //_connection.Close();
+        _rabbitMqConnection.Connection.Close();
     }
 
     private void RegisterServiceDeletedQueue()
@@ -61,9 +65,11 @@ public class RabbitListener
             await _appointmentsService.DeleteEveryAppointmentForDeletedServiceAsync(deletedServiceInfo.ServiceId);
 
             Console.WriteLine($" [x] Deleted :'{deletedServiceInfo.ServiceId}'");
+
+            _channel.BasicAck(ea.DeliveryTag, false);
         };
 
-        _channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+        _channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
     }
 
     private void RegisterServiceStatusChangedToInactive()
