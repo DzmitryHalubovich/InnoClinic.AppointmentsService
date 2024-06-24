@@ -26,6 +26,8 @@ public class AppointmentResultBaseDTO
 
     public string Recommendations { get; set; }
 
+    public string PatientEmail { get; set; }
+
     public Guid AppointmentId { get; set; }
 
     public DateTime AppointmentDate { get; set; }

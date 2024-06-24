@@ -83,7 +83,7 @@ public class ProducerServiceRabbitMq : IPublisherServiceRabbitMq
                                 body: messageByteFormat);
     }
 
-    public void PublishNotification (AppointmentNotificationMessage message)
+    public void PublishNotification (AppointmentRemindNotificationMessage message)
     {
         using var channel = _connection.Connection.CreateModel();
 

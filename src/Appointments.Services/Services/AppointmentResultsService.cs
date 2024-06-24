@@ -4,9 +4,9 @@ using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
 using Appointments.RabbitMQ.Interfaces;
-using Appointments.Services.Abstractions;
 using Appointments.Services.Abstractions.Services;
 using AutoMapper;
+using InnoClinic.SharedModels.MQMessages.Appointments;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -45,7 +45,9 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             _publisherMqService.PublishAppointmentResultCreatedMessage(new AppointmentResultCreatedMessage
             {
-                AppointmentResultId = createdAppointmentResultId
+                AppointmentResultId = createdAppointmentResultId,
+                PatientEmail = newAppointmentResult.PatientEmail,
+                PatientFullName = newAppointmentResult.PatientFirstName + " " + newAppointmentResult.PatientLastName
             });
 
             return createdAppointmentResultId;
@@ -127,7 +129,7 @@ public class AppointmentResultsService : IAppointmentResultsService
 
                 page.Header()
                     .AlignCenter()
-                    .Text("Результаты посещения врача")
+                    .Text("Doctor’s report")
                     .Bold()
                     .FontSize(24)
                     .FontColor(Colors.Black);
@@ -138,35 +140,35 @@ public class AppointmentResultsService : IAppointmentResultsService
                     {
                         x.Spacing(4);
 
-                        x.Item().Text($"Дата приема:").FontSize(18).SemiBold();
+                        x.Item().Text($"Appointment date:").FontSize(18).SemiBold();
                         x.Item().Text(result.AppointmentDate.ToString("dd/MM/yyyy HH:mm")).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Имя пациента: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Patient's name: ").FontSize(18).SemiBold();
                         x.Item().Text(patientFullName).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Дата рождения: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Birth day: ").FontSize(18).SemiBold();
                         x.Item().Text(result.PatientBirthDate.ToShortDateString()).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Имя доктора: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Doctor's name: ").FontSize(18).SemiBold();
                         x.Item().Text(doctorFullName).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Специализация: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Doctor's specialization: ").FontSize(18).SemiBold();
                         x.Item().Text(result.DoctorSpecialization).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Услуга: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Service: ").FontSize(18).SemiBold();
                         x.Item().Text(result.ServiceName).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Жалобы пациента: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Complaints: ").FontSize(18).SemiBold();
                         x.Item().Text(result.Complaints).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Заключение доктора: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Conclusions: ").FontSize(18).SemiBold();
                         x.Item().Text(result.Conclusion).FontColor(Colors.Blue.Darken4);
 
-                        x.Item().PaddingTop(10f).Text("Рекомендации доктора: ").FontSize(18).SemiBold();
+                        x.Item().PaddingTop(10f).Text("Recomendations: ").FontSize(18).SemiBold();
                         x.Item().Text(result.Recommendations).FontColor(Colors.Blue.Darken4);
                     });
 
-                page.Footer().Text("Желаем крепокого здоровья! Приходите к нам ещё!").AlignCenter().FontSize(12);
+                page.Footer().Text("We wish you good health! Come visit us again!").AlignCenter().FontSize(12);
             });
         }).GeneratePdf();
 

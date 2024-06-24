@@ -1,6 +1,5 @@
 ﻿using Appointments.Domain.Interfaces;
 using Appointments.RabbitMQ.Interfaces;
-using Appointments.Services.Abstraction;
 using Appointments.Services.Abstractions.BackgroundJobs;
 using InnoClinic.SharedModels.MQMessages.Appointments;
 
@@ -44,7 +43,7 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
     {
         var appointment = await _appointmentsRepository.GetByIdAsync(id);
         
-        _publisherService.PublishNotification(new AppointmentNotificationMessage()
+        _publisherService.PublishNotification(new AppointmentRemindNotificationMessage()
         {
             PatientEmail = appointment.PatientEmail,
             PatientFullName = appointment.PatientFullName,
