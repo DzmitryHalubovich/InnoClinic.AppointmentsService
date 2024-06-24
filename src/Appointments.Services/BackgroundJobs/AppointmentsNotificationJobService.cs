@@ -1,16 +1,17 @@
 ﻿using Appointments.Domain.Interfaces;
 using Appointments.RabbitMQ.Interfaces;
+using Appointments.Services.Abstraction;
 using Appointments.Services.Abstractions.BackgroundJobs;
 using InnoClinic.SharedModels.MQMessages.Appointments;
 
 namespace Appointments.Services.BackgroundJobs;
 
-public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAppointmentsJob
+public class AppointmentsNotificationJobService : IAppointmentsNotificationJobService
 {
     private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly IPublisherServiceRabbitMq _publisherService;
 
-    public SendMessageWithApprovedAppointmentsJob(IAppointmentsRepository appointmentsRepository, 
+    public AppointmentsNotificationJobService(IAppointmentsRepository appointmentsRepository, 
         IPublisherServiceRabbitMq publisherService)
     {
         _appointmentsRepository = appointmentsRepository;
@@ -28,7 +29,7 @@ public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAp
             return;
         }
 
-        _publisherService.Publish(approvedAppointments.Select(appointment => 
+        _publisherService.PublishAppointmentApprovedMessage(approvedAppointments.Select(appointment => 
             new AppointmentApprovedMessage()
             {
                 AppointmentId = appointment.Id,
@@ -37,5 +38,20 @@ public class SendMessageWithApprovedAppointmentsJob : ISendMessageWithApprovedAp
             }).ToList());
 
         await _appointmentsRepository.SetNotificationIsSentAsync(approvedAppointments);
+    }
+
+    public async Task SendNotificationAboutAppointment(Guid id)
+    {
+        var appointment = await _appointmentsRepository.GetByIdAsync(id);
+        
+        _publisherService.PublishNotification(new AppointmentNotificationMessage()
+        {
+            PatientEmail = appointment.PatientEmail,
+            PatientFullName = appointment.PatientFullName,
+            DoctorFullName = appointment.DoctorFullName,
+            ServiceName = appointment.ServiceName,
+            Date = appointment.AppointmentDate.ToShortDateString(),
+            Time = appointment.AppointmentDate.ToShortTimeString()
+        });
     }
 }

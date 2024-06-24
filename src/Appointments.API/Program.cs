@@ -13,7 +13,7 @@ app.UseBackgroundJobs();
 
 app.UseHangfireDashboard();
 
-app.UseExceptionHandler(opt => { });
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

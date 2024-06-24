@@ -4,19 +4,25 @@ using Appointments.Domain.Entity;
 using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Services.Abstraction;
+using Appointments.Services.Abstractions.BackgroundJobs;
+using Appointments.Services.BackgroundJobs;
 using AutoMapper;
+using Hangfire;
 
 namespace Appointments.Services.Services;
 
 public class AppointmentsService : IAppointmentsService
 {
+    private readonly IAppointmentsNotificationJobService _notificationService;
     private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly IMapper _mapper;
 
-    public AppointmentsService(IAppointmentsRepository appointmentsRepository, IMapper mapper)
+    public AppointmentsService(IAppointmentsRepository appointmentsRepository, IMapper mapper, IAppointmentsNotificationJobService notificationService)
     {
         _appointmentsRepository = appointmentsRepository;
         _mapper = mapper;
+        _notificationService = notificationService;
+
     }
 
     public async Task<AppointmentResponseDTO> GetAppointmentByIdAsync(Guid id)
@@ -92,6 +98,11 @@ public class AppointmentsService : IAppointmentsService
         }
 
         await _appointmentsRepository.ApproveAsync(appointment.Id);
+
+        var notificationTime = appointment.AppointmentDate - TimeSpan.FromDays(1);
+        var timeDelay = notificationTime - DateTime.Now;
+
+        BackgroundJob.Schedule(() => _notificationService.SendNotificationAboutAppointment(appointment.Id), timeDelay);
     }
 
     public async Task DeleteEveryAppointmentForDeletedServiceAsync(int serviceId)

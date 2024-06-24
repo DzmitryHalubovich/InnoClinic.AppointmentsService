@@ -3,6 +3,8 @@ using Appointments.Domain.Entity;
 using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
+using Appointments.RabbitMQ.Interfaces;
+using Appointments.Services.Abstractions;
 using Appointments.Services.Abstractions.Services;
 using AutoMapper;
 using QuestPDF.Fluent;
@@ -13,16 +15,18 @@ namespace Appointments.Services.Services;
 
 public class AppointmentResultsService : IAppointmentResultsService
 {
+    private readonly IPublisherServiceRabbitMq _publisherMqService;
     private readonly IAppointmentResultsRepository _appointmentResultsRepository;
     private readonly IMapper _mapper;
     private readonly DocumentsRepository _documentsRepository;
 
     public AppointmentResultsService(IAppointmentResultsRepository appointmentResultsRepository, IMapper mapper,
-        DocumentsRepository documentsRepository)
+        DocumentsRepository documentsRepository, IPublisherServiceRabbitMq publisherMqService)
     {
         _appointmentResultsRepository = appointmentResultsRepository;
         _mapper = mapper;
         _documentsRepository = documentsRepository;
+        _publisherMqService = publisherMqService;
     }
 
     public async Task<Guid> CreateAppointmentResultAsync(AppointmentResultCreateDTO newAppointmentResult)
@@ -39,9 +43,14 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 
+            _publisherMqService.PublishAppointmentResultCreatedMessage(new AppointmentResultCreatedMessage
+            {
+                AppointmentResultId = createdAppointmentResultId
+            });
+
             return createdAppointmentResultId;
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             await _appointmentResultsRepository.DeleteAsync(createdAppointmentResultId);
 

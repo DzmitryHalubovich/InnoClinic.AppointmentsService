@@ -81,8 +81,8 @@ public class AppointmentsRepository : IAppointmentsRepository
 
     public async Task<Guid> CreateAsync(Appointment appointment)
     {
-        var query = "INSERT INTO Appointments (PatientId, DoctorId, ServiceId, OfficeId, SpecializationId, AppointmentDate, TimeSlot, PatientEmail)" +
-                    "VALUES(@PatientId, @DoctorId, @ServiceId, @OfficeId, @SpecializationId, @AppointmentDate, @TimeSlot, @PatientEmail)" + "RETURNING Id;";
+        var query = "INSERT INTO Appointments (PatientId, DoctorId, ServiceId, OfficeId, SpecializationId, AppointmentDate, PatientEmail, ServiceName, PatientFullName, DoctorFullName)" +
+                    "VALUES(@PatientId, @DoctorId, @ServiceId, @OfficeId, @SpecializationId, @AppointmentDate, @PatientEmail, @ServiceName, @PatientFullName, @DoctorFullName)" + "RETURNING Id;";
 
         using (var connection = _context.CreateConnection())
         {
@@ -113,7 +113,7 @@ public class AppointmentsRepository : IAppointmentsRepository
         {
             await connection.QueryAsync(query, 
                 new { appointment.DoctorId, appointment.SpecializationId, 
-                    appointment.ServiceId, appointment.AppointmentDate, appointment.TimeSlot, appointment.Id });
+                    appointment.ServiceId, appointment.AppointmentDate, appointment.Id });
         }
     }
 

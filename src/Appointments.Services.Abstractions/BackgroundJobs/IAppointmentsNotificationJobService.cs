@@ -1,6 +1,8 @@
 ﻿namespace Appointments.Services.Abstractions.BackgroundJobs;
 
-public interface ISendMessageWithApprovedAppointmentsJob
+public interface IAppointmentsNotificationJobService
 {
     public Task SendMessageWithAllApprovedAppointmentsToNotificationServer();
+
+    public Task SendNotificationAboutAppointment(Guid id);
 }

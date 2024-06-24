@@ -21,6 +21,14 @@ public static class ConfigureServices
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
             .Get<AppointmentApprovedQueueBindingParameters>();
 
+        var appointmentNotificationBindingParameters = builder.Configuration
+            .GetSection("RabbitMqProducerQueuesParameters:AppointmentNotificationEvent")
+            .Get<AppointmentNotificationQueueBindingParameters>();
+
+        var appointmentResultCreatedBindingParameters = builder.Configuration
+            .GetSection("RabbitMqProducerQueuesParameters:AppointmentResultCreatedEvent")
+            .Get<AppointmentResultCreatedQueueBindingParameters>();
+
         var serviceDeletedBindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:ServiceDeletedEvent")
             .Get<ServiceDeletedBindingQueueParameters>();
@@ -30,17 +38,19 @@ public static class ConfigureServices
             .Get<ServiceStatusSetInactiveBindingQueueParameters>();
 
         builder.Services.AddSingleton(appointmentApprovedBindingParameters!);
+        builder.Services.AddSingleton(appointmentNotificationBindingParameters!);
+        builder.Services.AddSingleton(appointmentResultCreatedBindingParameters!);
         builder.Services.AddSingleton(serviceDeletedBindingParameters!);
         builder.Services.AddSingleton(serviceChangedToInactive);
 
         builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection());
         builder.Services.AddSingleton<AppointmentsDbContext>();
 
-        builder.Services.AddScoped<IPublisherServiceRabbitMq, ProducerServiceRabbitMq>();
-        builder.Services.AddScoped<ISendMessageWithApprovedAppointmentsJob, SendMessageWithApprovedAppointmentsJob>();
         builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();
         builder.Services.AddScoped<IAppointmentResultsService, AppointmentResultsService>();
         
+        builder.Services.AddTransient<IPublisherServiceRabbitMq, ProducerServiceRabbitMq>();
+        builder.Services.AddTransient<IAppointmentsNotificationJobService, AppointmentsNotificationJobService>();
         builder.Services.AddTransient<IAppointmentsService, AppointmentsService>();
         builder.Services.AddTransient<IAppointmentsRepository, AppointmentsRepository>();
     }

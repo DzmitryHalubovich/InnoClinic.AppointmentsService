@@ -8,7 +8,7 @@ public static class BackgroundJobExtensions
     public static IApplicationBuilder UseBackgroundJobs(this WebApplication app)
     {
         app.Services.GetRequiredService<IRecurringJobManager>()
-            .AddOrUpdate<ISendMessageWithApprovedAppointmentsJob>(
+            .AddOrUpdate<IAppointmentsNotificationJobService>(
                 "send-message-to-notification-service",
                 job => job.SendMessageWithAllApprovedAppointmentsToNotificationServer(),
                 app.Configuration["BackgroundJobs:Outbox:Schedule"]);

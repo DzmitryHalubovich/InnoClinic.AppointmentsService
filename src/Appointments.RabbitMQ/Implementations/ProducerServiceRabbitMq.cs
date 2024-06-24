@@ -1,5 +1,7 @@
 ﻿using Appointments.RabbitMQ.Interfaces;
 using Appointments.RabbitMQ.QueuesBindingParameters;
+using Appointments.Services.Abstraction;
+using Appointments.Services.Abstractions;
 using InnoClinic.SharedModels.MQMessages.Appointments;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -10,28 +12,36 @@ namespace Appointments.RabbitMQ.Implementations;
 public class ProducerServiceRabbitMq : IPublisherServiceRabbitMq
 {
     private readonly IRabbitMqConnection _connection;
-    private readonly AppointmentApprovedQueueBindingParameters _bindingParameters;
+    private readonly AppointmentApprovedQueueBindingParameters _bindingAppointmentApprovedParameters;
+    private readonly AppointmentNotificationQueueBindingParameters _bindingNotificationParameters;
+    private readonly AppointmentResultCreatedQueueBindingParameters _bindingAppointmentResultCreatedParameters;
 
-    public ProducerServiceRabbitMq(IRabbitMqConnection connection, AppointmentApprovedQueueBindingParameters bindingParameters)
+    public ProducerServiceRabbitMq(IRabbitMqConnection connection, 
+        AppointmentApprovedQueueBindingParameters bindingAppointmentApprovedParameters,
+        AppointmentNotificationQueueBindingParameters bindingNotificationParameters,
+        AppointmentResultCreatedQueueBindingParameters bindingAppointmentResultCreatedParameters)
     {
         _connection = connection;
-        _bindingParameters = bindingParameters;
+        _bindingAppointmentApprovedParameters = bindingAppointmentApprovedParameters;
+        _bindingNotificationParameters = bindingNotificationParameters;
+        _bindingAppointmentResultCreatedParameters = bindingAppointmentResultCreatedParameters;
+
     }
 
-    public void Publish(IEnumerable<AppointmentApprovedMessage> messages)
+    public void PublishAppointmentApprovedMessage(IEnumerable<AppointmentApprovedMessage> messages)
     {
         using var channel = _connection.Connection.CreateModel();
 
-        channel.ExchangeDeclare(_bindingParameters.ExchangeName, ExchangeType.Direct);
+        channel.ExchangeDeclare(_bindingAppointmentApprovedParameters.ExchangeName, ExchangeType.Direct);
 
-        channel.QueueDeclare(queue: _bindingParameters.QueueName,
+        channel.QueueDeclare(queue: _bindingAppointmentApprovedParameters.QueueName,
                              durable: false,
                              exclusive: false,
                              autoDelete: false);
 
-        channel.QueueBind(queue: _bindingParameters.QueueName,
-                          exchange: _bindingParameters.ExchangeName,
-                          routingKey: _bindingParameters.RoutingKey,
+        channel.QueueBind(queue: _bindingAppointmentApprovedParameters.QueueName,
+                          exchange: _bindingAppointmentApprovedParameters.ExchangeName,
+                          routingKey: _bindingAppointmentApprovedParameters.RoutingKey,
                           arguments: null);
 
         foreach (var message in messages)
@@ -40,10 +50,62 @@ public class ProducerServiceRabbitMq : IPublisherServiceRabbitMq
 
             var messageByteFormat = Encoding.UTF8.GetBytes(messageJsonFormat);
 
-            channel.BasicPublish(exchange: _bindingParameters.ExchangeName,
-                                 routingKey: _bindingParameters.RoutingKey,
+            channel.BasicPublish(exchange: _bindingAppointmentApprovedParameters.ExchangeName,
+                                 routingKey: _bindingAppointmentApprovedParameters.RoutingKey,
                                  basicProperties: null,
                                  body: messageByteFormat);
         }
+    }
+
+    public void PublishAppointmentResultCreatedMessage(AppointmentResultCreatedMessage message)
+    {
+        using var channel = _connection.Connection.CreateModel();
+
+        channel.ExchangeDeclare(_bindingAppointmentResultCreatedParameters.ExchangeName, ExchangeType.Direct);
+
+        channel.QueueDeclare(queue: _bindingAppointmentResultCreatedParameters.QueueName,
+                             durable: false,
+                             exclusive: false,
+                             autoDelete: false);
+
+        channel.QueueBind(queue: _bindingAppointmentResultCreatedParameters.QueueName,
+                          exchange: _bindingAppointmentResultCreatedParameters.ExchangeName,
+                          routingKey: _bindingAppointmentResultCreatedParameters.RoutingKey,
+                          arguments: null);
+        
+        var messageJsonFormat = JsonConvert.SerializeObject(message);
+
+        var messageByteFormat = Encoding.UTF8.GetBytes(messageJsonFormat);
+
+        channel.BasicPublish(exchange: _bindingAppointmentResultCreatedParameters.ExchangeName,
+                                routingKey: _bindingAppointmentResultCreatedParameters.RoutingKey,
+                                basicProperties: null,
+                                body: messageByteFormat);
+    }
+
+    public void PublishNotification (AppointmentNotificationMessage message)
+    {
+        using var channel = _connection.Connection.CreateModel();
+
+        channel.ExchangeDeclare(_bindingNotificationParameters.ExchangeName, ExchangeType.Direct);
+
+        channel.QueueDeclare(queue: _bindingNotificationParameters.QueueName,
+                             durable: false,
+                             exclusive: false,
+                             autoDelete: false);
+
+        channel.QueueBind(queue: _bindingNotificationParameters.QueueName,
+                          exchange: _bindingNotificationParameters.ExchangeName,
+                          routingKey: _bindingNotificationParameters.RoutingKey,
+                          arguments: null);
+
+        var messageJsonFormat = JsonConvert.SerializeObject(message);
+
+        var messageByteFormat = Encoding.UTF8.GetBytes(messageJsonFormat);
+
+        channel.BasicPublish(exchange: _bindingNotificationParameters.ExchangeName,
+                                 routingKey: _bindingNotificationParameters.RoutingKey,
+                                 basicProperties: null,
+                                 body: messageByteFormat);
     }
 }

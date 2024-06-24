@@ -1,39 +1,45 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Appointments.Domain.Entity
+namespace Appointments.Domain.Entity;
+
+public class Appointment
 {
-    public class Appointment
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        [Required]
-        public Guid PatientId { get; set; }
+    [Required]
+    public Guid PatientId { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string PatientEmail { get; set; } = null!;
+    [Required]
+    [EmailAddress]
+    public string PatientEmail { get; set; } = null!;
 
-        [Required]
-        public Guid DoctorId { get; set; }
+    [Required]
+    public string PatientFullName { get; set; }
 
-        [Required]
-        public int ServiceId { get; set; }
+    [Required]
+    public Guid DoctorId { get; set; }
 
-        [Required]
-        public string OfficeId { get; set; } = null!;
+    [Required]
+    public string DoctorFullName { get; set; }
 
-        [Required]
-        public int SpecializationId { get; set; }
+    [Required]
+    public string ServiceName { get; set; }
 
-        public DateTime AppointmentDate { get; set; }
+    [Required]
+    public int ServiceId { get; set; }
 
-        public int TimeSlot { get; set; }
+    [Required]
+    public string OfficeId { get; set; } = null!;
 
-        [DefaultValue(false)]
-        public bool IsApproved { get; set; }
+    [Required]
+    public int SpecializationId { get; set; }
 
-        [DefaultValue(false)]
-        public bool NotificationIsSent { get; set; }
-    }
+    public DateTime AppointmentDate { get; set; }
+
+    [DefaultValue(false)]
+    public bool IsApproved { get; set; }
+
+    [DefaultValue(false)]
+    public bool NotificationIsSent { get; set; }
 }
