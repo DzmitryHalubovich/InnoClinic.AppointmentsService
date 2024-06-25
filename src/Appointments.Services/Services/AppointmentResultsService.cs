@@ -4,6 +4,7 @@ using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
 using Appointments.RabbitMQ.Interfaces;
+using Appointments.Services.Abstractions;
 using Appointments.Services.Abstractions.Services;
 using AutoMapper;
 using InnoClinic.SharedModels.MQMessages.Appointments;
@@ -17,16 +18,21 @@ public class AppointmentResultsService : IAppointmentResultsService
 {
     private readonly IPublisherServiceRabbitMq _publisherMqService;
     private readonly IAppointmentResultsRepository _appointmentResultsRepository;
+    private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly IMapper _mapper;
     private readonly DocumentsRepository _documentsRepository;
 
-    public AppointmentResultsService(IAppointmentResultsRepository appointmentResultsRepository, IMapper mapper,
-        DocumentsRepository documentsRepository, IPublisherServiceRabbitMq publisherMqService)
+    public AppointmentResultsService(IAppointmentResultsRepository appointmentResultsRepository, 
+        IMapper mapper,
+        DocumentsRepository documentsRepository, 
+        IPublisherServiceRabbitMq publisherMqService,
+        IAppointmentsRepository appointmentsRepository)
     {
         _appointmentResultsRepository = appointmentResultsRepository;
         _mapper = mapper;
         _documentsRepository = documentsRepository;
         _publisherMqService = publisherMqService;
+        _appointmentsRepository = appointmentsRepository;
     }
 
     public async Task<Guid> CreateAppointmentResultAsync(AppointmentResultCreateDTO newAppointmentResult)
@@ -80,7 +86,14 @@ public class AppointmentResultsService : IAppointmentResultsService
 
         if (appointmentResultEntity is null)
         {
-            throw new NotFoundException($"Result with id: {id} was not found in the database.");
+            throw new NotFoundException($"Appointment result with id: {id} was not found in the database.");
+        }
+
+        var appointmentEntity = await _appointmentsRepository.GetByIdAsync(appointmentResultEntity.AppointmentId);
+
+        if (appointmentEntity is null)
+        {
+            throw new NotFoundException($"Appointment with id: {id} was not found in the database.");
         }
 
         var backUpResult = appointmentResultEntity;
@@ -98,6 +111,13 @@ public class AppointmentResultsService : IAppointmentResultsService
             await _documentsRepository.DeletePdfFileAsync(fileName.ToString());
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
+
+            _publisherMqService.PublishAppointmentResultUpdatedMessage(new AppointmentResultUpdatedMessage
+            {
+                AppointmentResultId = appointmentResultEntity.Id,
+                PatientEmail = appointmentEntity.PatientEmail,
+                PatientFullName = appointmentEntity.PatientFullName
+            });
         }
         catch (HttpRequestException)
         {

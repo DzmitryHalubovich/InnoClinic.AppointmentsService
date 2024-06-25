@@ -21,8 +21,6 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
     {
         var approvedAppointments = await _appointmentsRepository.GetAllApprovedForNotitficationAsync();
 
-        Console.WriteLine("Elements count: " + approvedAppointments.Count());
-
         if (!approvedAppointments.Any())
         {
             return;

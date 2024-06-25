@@ -21,9 +21,13 @@ public static class ConfigureServices
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
             .Get<AppointmentApprovedQueueBindingParameters>();
 
-        var appointmentNotificationBindingParameters = builder.Configuration
+        var appointmentRemindNotificationBindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentNotificationEvent")
             .Get<AppointmentNotificationQueueBindingParameters>();
+        
+        var appointmentResultUpdatedBindingParameters = builder.Configuration
+            .GetSection("RabbitMqProducerQueuesParameters:AppointmentResultUpdatedEvent")
+            .Get<AppointmentResultUpdatedQueueBindingParameters>();
 
         var appointmentResultCreatedBindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentResultCreatedEvent")
@@ -35,11 +39,12 @@ public static class ConfigureServices
 
         var serviceChangedToInactive = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:ServiceStatusSetInactiveEnent")
-            .Get<ServiceStatusSetInactiveBindingQueueParameters>();
+            .Get<ServiceStatusSetInactiveBindingQueueParameters>();        
 
         builder.Services.AddSingleton(appointmentApprovedBindingParameters!);
-        builder.Services.AddSingleton(appointmentNotificationBindingParameters!);
+        builder.Services.AddSingleton(appointmentRemindNotificationBindingParameters!);
         builder.Services.AddSingleton(appointmentResultCreatedBindingParameters!);
+        builder.Services.AddSingleton(appointmentResultUpdatedBindingParameters!);
         builder.Services.AddSingleton(serviceDeletedBindingParameters!);
         builder.Services.AddSingleton(serviceChangedToInactive);
 
