@@ -4,7 +4,6 @@ using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
 using Appointments.RabbitMQ.Interfaces;
-using Appointments.Services.Abstractions;
 using Appointments.Services.Abstractions.Services;
 using AutoMapper;
 using InnoClinic.SharedModels.MQMessages.Appointments;
