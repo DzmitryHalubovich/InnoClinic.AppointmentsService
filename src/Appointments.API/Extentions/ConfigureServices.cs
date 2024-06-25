@@ -23,7 +23,7 @@ public static class ConfigureServices
 
         var appointmentRemindNotificationBindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentNotificationEvent")
-            .Get<AppointmentNotificationQueueBindingParameters>();
+            .Get<AppointmentRemindNotificationQueueBindingParameters>();
         
         var appointmentResultUpdatedBindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentResultUpdatedEvent")

@@ -41,7 +41,7 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
     {
         var appointment = await _appointmentsRepository.GetByIdAsync(id);
         
-        _publisherService.PublishNotification(new AppointmentRemindNotificationMessage()
+        _publisherService.PublishRemindNotification(new AppointmentRemindNotificationMessage()
         {
             PatientEmail = appointment.PatientEmail,
             PatientFullName = appointment.PatientFullName,
