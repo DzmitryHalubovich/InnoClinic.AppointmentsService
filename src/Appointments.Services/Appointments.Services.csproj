@@ -7,7 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.14" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="PDFsharp" Version="6.1.0" />
+    <PackageReference Include="QuestPDF" Version="2024.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Appointments.Infrastructure\Appointments.Infrastructure.csproj" />
+    <ProjectReference Include="..\Appointments.RabbitMQ\Appointments.RabbitMQ.csproj" />
     <ProjectReference Include="..\Appointments.Services.Abstractions\Appointments.Services.Abstractions.csproj" />
   </ItemGroup>
 
