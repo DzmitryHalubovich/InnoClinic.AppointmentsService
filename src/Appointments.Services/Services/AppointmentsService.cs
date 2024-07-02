@@ -5,7 +5,6 @@ using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Services.Abstraction;
 using Appointments.Services.Abstractions.BackgroundJobs;
-using Appointments.Services.BackgroundJobs;
 using AutoMapper;
 using Hangfire;
 
@@ -22,7 +21,6 @@ public class AppointmentsService : IAppointmentsService
         _appointmentsRepository = appointmentsRepository;
         _mapper = mapper;
         _notificationService = notificationService;
-
     }
 
     public async Task<AppointmentResponseDTO> GetAppointmentByIdAsync(Guid id)

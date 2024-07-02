@@ -4,7 +4,6 @@ using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
 using Appointments.RabbitMQ.Interfaces;
-using Appointments.RabbitMQ.QueuesBindingParameters;
 using Appointments.Services.Abstractions.Services;
 using AutoMapper;
 using InnoClinic.SharedModels.MQMessages.Appointments;
@@ -107,8 +106,6 @@ public class AppointmentResultsService : IAppointmentResultsService
         try
         {
             var pdfFile = GeneratePdfFile(updatedAppointmentResult);
-
-            await _documentsRepository.DeletePdfFileAsync(fileName.ToString());
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 

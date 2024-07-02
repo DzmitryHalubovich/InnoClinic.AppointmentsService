@@ -13,9 +13,9 @@ using Hangfire;
 
 namespace Appointments.API.Extentions;
 
-public static class ConfigureServices
+public static class WebApplicationBuilderExtention
 {
-    public static void ConfigureScopes(this WebApplicationBuilder builder)
+    public static void ConfigureServices(this WebApplicationBuilder builder)
     {
         var appointmentApprovedBindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
@@ -53,15 +53,11 @@ public static class ConfigureServices
 
         builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();
         builder.Services.AddScoped<IAppointmentResultsService, AppointmentResultsService>();
-        
-        builder.Services.AddTransient<IPublisherServiceRabbitMq, ProducerServiceRabbitMq>();
-        builder.Services.AddTransient<IAppointmentsNotificationJobService, AppointmentsNotificationJobService>();
-        builder.Services.AddTransient<IAppointmentsService, AppointmentsService>();
-        builder.Services.AddTransient<IAppointmentsRepository, AppointmentsRepository>();
-    }
+        builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
+        builder.Services.AddScoped<IPublisherServiceRabbitMq, ProducerServiceRabbitMq>();
+        builder.Services.AddScoped<IAppointmentsNotificationJobService, AppointmentsNotificationJobService>();
+        builder.Services.AddScoped<IAppointmentsService, AppointmentsService>();
 
-    public static void ConfigureDIContainers(this WebApplicationBuilder builder)
-    {
         var bindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
             .Get<BaseBindingQueueParameters>();
@@ -70,9 +66,6 @@ public static class ConfigureServices
            configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireSQLConnection")));
         builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(1));
 
-
-        builder.Services.AddHostedService<ConsumerServiceRabbitMq>();
-
         builder.Services.AddAutoMapper(typeof(MapperProfile));
         builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -80,5 +73,6 @@ public static class ConfigureServices
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddHttpClient<DocumentsRepository>();
+        builder.Services.AddHostedService<ConsumerServiceRabbitMq>();
     }
 }

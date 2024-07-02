@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Appointments.Contracts.DTO.Appointment;
+﻿namespace Appointments.Contracts.DTO.Appointment;
 
 public class AppointmentResponseDTO
 {

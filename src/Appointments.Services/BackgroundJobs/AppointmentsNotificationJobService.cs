@@ -2,39 +2,51 @@
 using Appointments.RabbitMQ.Interfaces;
 using Appointments.Services.Abstractions.BackgroundJobs;
 using InnoClinic.SharedModels.MQMessages.Appointments;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Appointments.Services.BackgroundJobs;
 
 public class AppointmentsNotificationJobService : IAppointmentsNotificationJobService
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly IPublisherServiceRabbitMq _publisherService;
 
-    public AppointmentsNotificationJobService(IAppointmentsRepository appointmentsRepository, 
+    public AppointmentsNotificationJobService(IServiceProvider serviceProvider, IAppointmentsRepository appointmentsRepository, 
         IPublisherServiceRabbitMq publisherService)
     {
+        _serviceProvider = serviceProvider;
         _appointmentsRepository = appointmentsRepository;
         _publisherService = publisherService;
     }
 
     public async Task SendMessageWithAllApprovedAppointmentsToNotificationServer()
     {
-        var approvedAppointments = await _appointmentsRepository.GetAllApprovedForNotitficationAsync();
-
-        if (!approvedAppointments.Any())
+        using (IServiceScope scope = _serviceProvider.CreateScope())
         {
-            return;
-        }
+            var scopedProvider = scope.ServiceProvider;
 
-        _publisherService.PublishAppointmentApprovedMessage(approvedAppointments.Select(appointment => 
-            new AppointmentApprovedMessage()
+            var appointmentRepository = scope.ServiceProvider.GetRequiredService<IAppointmentsRepository>();
+
+            var approvedAppointmentsList = await _appointmentsRepository.GetAllApprovedForNotitficationAsync();
+
+            if (!approvedAppointmentsList.Any())
             {
-                AppointmentId = appointment.Id,
-                PatientEmail = appointment.PatientEmail,
-                AppointmentDate = appointment.AppointmentDate
-            }).ToList());
+                return;
+            }
 
-        await _appointmentsRepository.SetNotificationIsSentAsync(approvedAppointments);
+            var publisherService = scope.ServiceProvider.GetRequiredService<IPublisherServiceRabbitMq>();
+
+            publisherService.PublishAppointmentApprovedMessage(approvedAppointmentsList.Select(appointment =>
+                new AppointmentApprovedMessage()
+                {
+                    AppointmentId = appointment.Id,
+                    PatientEmail = appointment.PatientEmail,
+                    AppointmentDate = appointment.AppointmentDate
+                }).ToList());
+
+            await _appointmentsRepository.SetNotificationIsSentAsync(approvedAppointmentsList);
+        }
     }
 
     public async Task SendNotificationAboutAppointment(Guid id)

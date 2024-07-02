@@ -5,13 +5,13 @@ namespace Appointments.API.Extentions;
 
 public static class BackgroundJobExtensions
 {
-    public static IApplicationBuilder UseBackgroundJobs(this WebApplication app)
+    public static IApplicationBuilder UseBackgroundAppointmentApprovedNotificationJob(this WebApplication app)
     {
         app.Services.GetRequiredService<IRecurringJobManager>()
             .AddOrUpdate<IAppointmentsNotificationJobService>(
                 "send-message-to-notification-service",
                 job => job.SendMessageWithAllApprovedAppointmentsToNotificationServer(),
-                app.Configuration["BackgroundJobs:Outbox:Schedule"]);
+                app.Configuration["BackgroundJobs:GatherAllApprovedAppointments:Schedule"]);
 
         return app;
     }

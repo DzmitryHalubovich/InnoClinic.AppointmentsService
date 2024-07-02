@@ -3,13 +3,13 @@ using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.ConfigureScopes();
+builder.ConfigureServices();
 
-builder.ConfigureDIContainers();
+builder.ConfigureServices();
 
 var app = builder.Build();
 
-app.UseBackgroundJobs();
+app.UseBackgroundAppointmentApprovedNotificationJob();
 
 app.UseHangfireDashboard();
 
