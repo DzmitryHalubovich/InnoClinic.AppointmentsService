@@ -4,13 +4,13 @@ namespace Appointments.Infrastructure.Repositories;
 
 public class DocumentsServiceHttpClient
 {
-    public HttpClient HttpClient { get; set; }
+    private readonly HttpClient _httpClient;
 
     public DocumentsServiceHttpClient(HttpClient httpClient)
     {
         httpClient.BaseAddress = new Uri("https://localhost:7208/api/documents");
 
-        HttpClient = httpClient;
+        _httpClient = httpClient;
     }
 
     public async Task UploadPdfFileAsync(byte[] file, string fileName)
@@ -22,14 +22,14 @@ public class DocumentsServiceHttpClient
 
         form.Add(fileContent, "file", fileName);
 
-        var response = await HttpClient.PostAsync(string.Empty, form);
+        var response = await _httpClient.PostAsync(string.Empty, form);
 
         response.EnsureSuccessStatusCode();
     }
 
     public async Task DeletePdfFileAsync(string fileName)
     {
-        var response = await HttpClient.DeleteAsync($"/api/documents/{fileName}");
+        var response = await _httpClient.DeleteAsync($"/api/documents/{fileName}");
 
         response.EnsureSuccessStatusCode();
     }
