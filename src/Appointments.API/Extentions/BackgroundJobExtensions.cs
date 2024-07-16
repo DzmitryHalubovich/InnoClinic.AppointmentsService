@@ -9,7 +9,7 @@ public static class BackgroundJobExtensions
     {
         app.Services.GetRequiredService<IRecurringJobManager>()
             .AddOrUpdate<IAppointmentsNotificationJobService>(
-                "send-message-to-notification-service",
+                app.Configuration["BackgroundJobs:GatherAllApprovedAppointments:RequrringJobId"],
                 job => job.SendMessageWithAllApprovedAppointmentsToNotificationServer(),
                 app.Configuration["BackgroundJobs:GatherAllApprovedAppointments:Schedule"]);
 

@@ -11,21 +11,25 @@ public class ProducerServiceRabbitMq : IPublisherServiceRabbitMq
 {
     private readonly IRabbitMqConnection _connection;
     private readonly AppointmentApprovedQueueBindingParameters _bindingAppointmentApprovedParameters;
-    private readonly AppointmentRemindNotificationQueueBindingParameters _bindingAppointmentRemindNotificationParameters;
-    private readonly AppointmentResultCreatedQueueBindingParameters _bindingAppointmentResultCreatedParameters;
-    private readonly AppointmentResultUpdatedQueueBindingParameters _bindingAppointmentResultUpdatedParameters;
 
     public ProducerServiceRabbitMq(IRabbitMqConnection connection, 
-        AppointmentApprovedQueueBindingParameters bindingAppointmentApprovedParameters,
-        AppointmentRemindNotificationQueueBindingParameters bindingApplointmentRemindNotificationParameters,
-        AppointmentResultCreatedQueueBindingParameters bindingAppointmentResultCreatedParameters,
-        AppointmentResultUpdatedQueueBindingParameters bindingAppointmentResultUpdatedParameters)
+        AppointmentApprovedQueueBindingParameters bindingAppointmentApprovedParameters)
     {
         _connection = connection;
         _bindingAppointmentApprovedParameters = bindingAppointmentApprovedParameters;
-        _bindingAppointmentRemindNotificationParameters = bindingApplointmentRemindNotificationParameters;
-        _bindingAppointmentResultCreatedParameters = bindingAppointmentResultCreatedParameters;
-        _bindingAppointmentResultUpdatedParameters = bindingAppointmentResultUpdatedParameters;
+    }
+
+    public void PublishMessage<T>(BaseBindingQueueParameters queueParameters, T message)
+    {
+        using var channel = _connection.Connection.CreateModel();
+
+        SetUpQueue(queueParameters, channel);
+
+        var messageJsonFormat = JsonConvert.SerializeObject(message);
+
+        var messageByteFormat = Encoding.UTF8.GetBytes(messageJsonFormat);
+
+        PublishMessage(queueParameters, channel, messageByteFormat);
     }
 
     public void PublishAppointmentApprovedMessage(IEnumerable<AppointmentApprovedMessage> messages)
@@ -43,46 +47,6 @@ public class ProducerServiceRabbitMq : IPublisherServiceRabbitMq
             PublishMessage(_bindingAppointmentApprovedParameters, channel, messageByteFormat);
         }
     }
-
-    public void PublishAppointmentResultCreatedMessage(AppointmentResultCreatedMessage message)
-    {
-        using var channel = _connection.Connection.CreateModel();
-
-        SetUpQueue(_bindingAppointmentResultCreatedParameters, channel);
-
-        var messageJsonFormat = JsonConvert.SerializeObject(message);
-
-        var messageByteFormat = Encoding.UTF8.GetBytes(messageJsonFormat);
-
-        PublishMessage(_bindingAppointmentResultCreatedParameters, channel, messageByteFormat);
-    }
-
-    public void PublishAppointmentResultUpdatedMessage(AppointmentResultUpdatedMessage message)
-    {
-        using var channel = _connection.Connection.CreateModel();
-
-        SetUpQueue(_bindingAppointmentResultUpdatedParameters, channel);
-
-        var messageJsonFormat = JsonConvert.SerializeObject(message);
-
-        var messageByteFormat = Encoding.UTF8.GetBytes(messageJsonFormat);
-
-        PublishMessage(_bindingAppointmentResultUpdatedParameters, channel, messageByteFormat);
-    }
-
-    public void PublishRemindNotification (AppointmentRemindNotificationMessage message)
-    {
-        using var channel = _connection.Connection.CreateModel();
-
-        SetUpQueue(_bindingAppointmentRemindNotificationParameters, channel);
-
-        var messageJsonFormat = JsonConvert.SerializeObject(message);
-
-        var messageByteFormat = Encoding.UTF8.GetBytes(messageJsonFormat);
-
-        PublishMessage(_bindingAppointmentRemindNotificationParameters, channel, messageByteFormat);
-    }
-
 
     private void SetUpQueue(BaseBindingQueueParameters parameters, IModel channel)
     {

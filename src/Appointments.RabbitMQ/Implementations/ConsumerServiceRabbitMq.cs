@@ -33,15 +33,14 @@ public class ConsumerServiceRabbitMq : IHostedService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        using (IServiceScope scope = _serviceProvider.CreateScope())
-        {
-            var appointmentService = scope.ServiceProvider.GetService<IAppointmentsService>();
+        using IServiceScope scope = _serviceProvider.CreateScope();
+        
+        var appointmentService = scope.ServiceProvider.GetService<IAppointmentsService>();
 
-            RegisterServiceDeletedEventConsumer(appointmentService);
-            RegisterServiceStatusChangedToIncativeEventConsumer(appointmentService);
+        RegisterServiceDeletedEventConsumer(appointmentService);
+        RegisterServiceStatusChangedToIncativeEventConsumer(appointmentService);
 
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

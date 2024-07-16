@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Appointments.Presentation.Controllers;
 
 [ApiController]
-[Route("api/results")]
+[Route("api/appointmentResults")]
 public class AppointmentResultsController : ControllerBase
 {
     private readonly IAppointmentResultsService _appointmentResultsService;

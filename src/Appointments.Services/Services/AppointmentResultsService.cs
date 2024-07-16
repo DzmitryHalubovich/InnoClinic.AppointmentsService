@@ -4,6 +4,7 @@ using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
 using Appointments.RabbitMQ.Interfaces;
+using Appointments.RabbitMQ.QueuesBindingParameters;
 using Appointments.Services.Abstractions.Services;
 using AutoMapper;
 using InnoClinic.SharedModels.MQMessages.Appointments;
@@ -19,19 +20,25 @@ public class AppointmentResultsService : IAppointmentResultsService
     private readonly IAppointmentResultsRepository _appointmentResultsRepository;
     private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly IMapper _mapper;
-    private readonly DocumentsRepository _documentsRepository;
+    private readonly DocumentsServiceHttpClient _documentsRepository;
+    private readonly AppointmentResultUpdatedQueueBindingParameters _bindingAppointmentResultUpdatedParameters;
+    private readonly AppointmentResultCreatedQueueBindingParameters _bindingAppointmentResultCreatedParameters;
 
     public AppointmentResultsService(IAppointmentResultsRepository appointmentResultsRepository, 
         IMapper mapper,
-        DocumentsRepository documentsRepository, 
+        DocumentsServiceHttpClient documentsRepository, 
         IPublisherServiceRabbitMq publisherMqService,
-        IAppointmentsRepository appointmentsRepository)
+        IAppointmentsRepository appointmentsRepository,
+        AppointmentResultUpdatedQueueBindingParameters bindingAppointmentResultUpdatedParameters,
+        AppointmentResultCreatedQueueBindingParameters bindingAppointmentResultCreatedParameters)
     {
         _appointmentResultsRepository = appointmentResultsRepository;
         _mapper = mapper;
         _documentsRepository = documentsRepository;
         _publisherMqService = publisherMqService;
         _appointmentsRepository = appointmentsRepository;
+        _bindingAppointmentResultUpdatedParameters = bindingAppointmentResultUpdatedParameters;
+        _bindingAppointmentResultCreatedParameters = bindingAppointmentResultCreatedParameters;
     }
 
     public async Task<Guid> CreateAppointmentResultAsync(AppointmentResultCreateDTO newAppointmentResult)
@@ -48,7 +55,9 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 
-            _publisherMqService.PublishAppointmentResultCreatedMessage(new AppointmentResultCreatedMessage
+            _publisherMqService.PublishMessage(
+                _bindingAppointmentResultCreatedParameters,
+                new AppointmentResultCreatedMessage
             {
                 AppointmentResultId = createdAppointmentResultId,
                 PatientEmail = newAppointmentResult.PatientEmail,
@@ -57,11 +66,11 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             return createdAppointmentResultId;
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
             await _appointmentResultsRepository.DeleteAsync(createdAppointmentResultId);
 
-            throw new HttpRequestException("Something went wrong during request to outer service.");
+            throw new HttpRequestException(ex.Message);
         }
     }
 
@@ -109,7 +118,9 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 
-            _publisherMqService.PublishAppointmentResultUpdatedMessage(new AppointmentResultUpdatedMessage
+            _publisherMqService.PublishMessage(
+                _bindingAppointmentResultUpdatedParameters,
+                new AppointmentResultUpdatedMessage
             {
                 AppointmentResultId = appointmentResultEntity.Id,
                 PatientEmail = appointmentEntity.PatientEmail,
@@ -129,11 +140,13 @@ public class AppointmentResultsService : IAppointmentResultsService
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
-        var patientFullName = string.Join(" ",
-    new[] { result.PatientFirstName, result.PatientMiddleName, result.PatientLastName }.Where(x => !string.IsNullOrEmpty(x)));
+        var patientFullName = string.Join(" ", 
+            new[] { result.PatientFirstName, result.PatientMiddleName, result.PatientLastName }
+            .Where(x => !string.IsNullOrEmpty(x)));
 
         var doctorFullName = string.Join(" ",
-            new[] { result.DoctorFirstName, result.DoctorMiddleName, result.DoctorLastName }.Where(x => !string.IsNullOrEmpty(x)));
+            new[] { result.DoctorFirstName, result.DoctorMiddleName, result.DoctorLastName }
+            .Where(x => !string.IsNullOrEmpty(x)));
 
         var pdfFile = Document.Create(container =>
         {

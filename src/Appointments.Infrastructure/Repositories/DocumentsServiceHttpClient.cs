@@ -2,11 +2,11 @@
 
 namespace Appointments.Infrastructure.Repositories;
 
-public class DocumentsRepository
+public class DocumentsServiceHttpClient
 {
     public HttpClient HttpClient { get; set; }
 
-    public DocumentsRepository(HttpClient httpClient)
+    public DocumentsServiceHttpClient(HttpClient httpClient)
     {
         httpClient.BaseAddress = new Uri("https://localhost:7208/api/documents");
 

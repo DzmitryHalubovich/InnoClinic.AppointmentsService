@@ -45,12 +45,11 @@ public class AppointmentsRepository : IAppointmentsRepository
             query.Append("AND isapproved = true ");
         }
 
-        using (var connection = _context.CreateConnection())
-        {
-            var appointments = await connection.QueryAsync<Appointment>(query.ToString(), queryParameters);
+        using var connection = _context.CreateConnection();
+            
+        var appointments = await connection.QueryAsync<Appointment>(query.ToString(), queryParameters);
 
-            return appointments;
-        }
+        return appointments;
     }
 
     public async Task<IEnumerable<Appointment>> GetAllApprovedForNotitficationAsync()
@@ -58,12 +57,11 @@ public class AppointmentsRepository : IAppointmentsRepository
         var query = "SELECT * FROM Appointments a " +
                     "WHERE a.IsApproved = true and a.NotificationIsSent = false";
 
-        using (var connection = _context.CreateConnection())
-        {
-            var appointments = await connection.QueryAsync<Appointment>(query);
+        using var connection = _context.CreateConnection();
+        
+        var appointments = await connection.QueryAsync<Appointment>(query);
 
-            return appointments;
-        }
+        return appointments;
     }
 
     public async Task<Appointment?> GetByIdAsync(Guid id)
@@ -71,12 +69,11 @@ public class AppointmentsRepository : IAppointmentsRepository
         var query = "SELECT * FROM Appointments " +
                     "WHERE Id = @id";
 
-        using (var connection = _context.CreateConnection())
-        {
-            var appointment = await connection.QuerySingleOrDefaultAsync<Appointment>(query, new { id });
+        using var connection = _context.CreateConnection();
+        
+        var appointment = await connection.QuerySingleOrDefaultAsync<Appointment>(query, new { id });
 
-            return appointment;
-        }
+        return appointment;
     }
 
     public async Task<Guid> CreateAsync(Appointment appointment)
@@ -84,12 +81,11 @@ public class AppointmentsRepository : IAppointmentsRepository
         var query = "INSERT INTO Appointments (PatientId, DoctorId, ServiceId, OfficeId, SpecializationId, AppointmentDate, PatientEmail, ServiceName, PatientFullName, DoctorFullName)" +
                     "VALUES(@PatientId, @DoctorId, @ServiceId, @OfficeId, @SpecializationId, @AppointmentDate, @PatientEmail, @ServiceName, @PatientFullName, @DoctorFullName)" + "RETURNING Id;";
 
-        using (var connection = _context.CreateConnection())
-        {
-            var createdAppointmentId = await connection.QuerySingleAsync<Guid>(query, appointment);
+        using var connection = _context.CreateConnection();
 
-            return createdAppointmentId;
-        }
+        var createdAppointmentId = await connection.QuerySingleAsync<Guid>(query, appointment);
+
+        return createdAppointmentId;
     }
 
     public async Task DeleteAsync(Guid id)
@@ -97,24 +93,23 @@ public class AppointmentsRepository : IAppointmentsRepository
         var query = "DELETE FROM Appointments " +
                     "WHERE Id = @id";
 
-        using (var connection = _context.CreateConnection())
-        {
-            await connection.QueryAsync(query, new { id });
-        }
+        using var connection = _context.CreateConnection();
+        
+        await connection.QueryAsync(query, new { id });
     }
 
     public async Task UpdateAsync(Appointment appointment)
     {
         var query = "UPDATE Appointments " +
-                    "SET doctorid = @DoctorId, specializationid = @SpecializationId, serviceid = @ServiceId, appointmentdate = @AppointmentDate, timeslot = @TimeSlot " +
+                    "SET doctorid = @DoctorId, specializationid = @SpecializationId, serviceid = @ServiceId, " +
+                    "appointmentdate = @AppointmentDate, timeslot = @TimeSlot " +
                     "WHERE Id = @Id";
 
-        using (var connection = _context.CreateConnection())
-        {
-            await connection.QueryAsync(query, 
-                new { appointment.DoctorId, appointment.SpecializationId, 
-                    appointment.ServiceId, appointment.AppointmentDate, appointment.Id });
-        }
+        using var connection = _context.CreateConnection();
+        
+        await connection.QueryAsync(query, 
+            new { appointment.DoctorId, appointment.SpecializationId, 
+                appointment.ServiceId, appointment.AppointmentDate, appointment.Id });
     }
 
     public async Task ApproveAsync(Guid id)
@@ -123,10 +118,9 @@ public class AppointmentsRepository : IAppointmentsRepository
                     "SET IsApproved = true " +
                     "WHERE Id = @id";
 
-        using (var connection = _context.CreateConnection())
-        {
-            await connection.QueryAsync(query, new { id });
-        }
+        using var connection = _context.CreateConnection();
+        
+        await connection.QueryAsync(query, new { id });
     }
 
     public async Task DeleteAllForDeletedServiceAsync(int serviceId)
@@ -134,22 +128,20 @@ public class AppointmentsRepository : IAppointmentsRepository
         var query = "DELETE FROM Appointments " +
                     "WHERE ServiceId = @serviceId";
 
-        using (var connection = _context.CreateConnection())
-        {
-            await connection.QueryAsync(query, new { serviceId });
-        }
+        using var connection = _context.CreateConnection();
+        
+        await connection.QueryAsync(query, new { serviceId });
     }
 
     public async Task SetNotificationIsSentAsync(IEnumerable<Appointment> appointments)
     {
-        using (var connection = _context.CreateConnection())
-        {
-            var query = "UPDATE appointments SET NotificationIsSent = true WHERE Id = @Id";
+        var query = "UPDATE appointments SET NotificationIsSent = true WHERE Id = @Id";
 
-            foreach (var appointment in appointments)
-            {
-                await connection.ExecuteAsync(query, new { appointment.Id });
-            }
+        using var connection = _context.CreateConnection();
+
+        foreach (var appointment in appointments)
+        {
+            await connection.ExecuteAsync(query, new { appointment.Id });
         }
     }
 }

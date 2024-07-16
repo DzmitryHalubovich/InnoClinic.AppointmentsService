@@ -1,5 +1,6 @@
 ﻿using Appointments.Domain.Interfaces;
 using Appointments.RabbitMQ.Interfaces;
+using Appointments.RabbitMQ.QueuesBindingParameters;
 using Appointments.Services.Abstractions.BackgroundJobs;
 using InnoClinic.SharedModels.MQMessages.Appointments;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,12 +13,18 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
     private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly IPublisherServiceRabbitMq _publisherService;
 
-    public AppointmentsNotificationJobService(IServiceProvider serviceProvider, IAppointmentsRepository appointmentsRepository, 
-        IPublisherServiceRabbitMq publisherService)
+    private readonly AppointmentRemindNotificationQueueBindingParameters _bindingAppointmentRemindNotificationParameters;
+
+    public AppointmentsNotificationJobService(IServiceProvider serviceProvider, 
+        IAppointmentsRepository appointmentsRepository,
+        IPublisherServiceRabbitMq publisherService,
+        AppointmentRemindNotificationQueueBindingParameters bindingApplointmentRemindNotificationParameters)
     {
         _serviceProvider = serviceProvider;
         _appointmentsRepository = appointmentsRepository;
         _publisherService = publisherService;
+
+        _bindingAppointmentRemindNotificationParameters = bindingApplointmentRemindNotificationParameters;
     }
 
     public async Task SendMessageWithAllApprovedAppointmentsToNotificationServer()
@@ -53,7 +60,9 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
     {
         var appointment = await _appointmentsRepository.GetByIdAsync(id);
         
-        _publisherService.PublishRemindNotification(new AppointmentRemindNotificationMessage()
+        _publisherService.PublishMessage(
+            _bindingAppointmentRemindNotificationParameters, 
+            new AppointmentRemindNotificationMessage()
         {
             PatientEmail = appointment.PatientEmail,
             PatientFullName = appointment.PatientFullName,

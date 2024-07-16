@@ -58,6 +58,11 @@ public static class WebApplicationBuilderExtention
         builder.Services.AddScoped<IAppointmentsNotificationJobService, AppointmentsNotificationJobService>();
         builder.Services.AddScoped<IAppointmentsService, AppointmentsService>();
 
+        builder.Services.AddHttpClient("DocumentsServiceHttpClient", client =>
+        {
+            client.BaseAddress = new Uri(builder.Configuration["DocumentsServiceUri"]);
+        });
+
         var bindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
             .Get<BaseBindingQueueParameters>();
@@ -72,7 +77,7 @@ public static class WebApplicationBuilderExtention
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddHttpClient<DocumentsRepository>();
+        builder.Services.AddHttpClient<DocumentsServiceHttpClient>();
         builder.Services.AddHostedService<ConsumerServiceRabbitMq>();
     }
 }
