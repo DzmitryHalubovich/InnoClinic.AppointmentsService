@@ -66,11 +66,15 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             return createdAppointmentResultId;
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             await _appointmentResultsRepository.DeleteAsync(createdAppointmentResultId);
 
-            throw new HttpRequestException(ex.Message);
+            throw;
+        }
+        catch(Exception)
+        {
+            throw;
         }
     }
 
@@ -131,7 +135,11 @@ public class AppointmentResultsService : IAppointmentResultsService
         {
             await _appointmentResultsRepository.UpdateAsync(backUpResult);
 
-            throw new HttpRequestException("Something went wrong during request to outer service.");
+            throw;
+        }
+        catch (Exception)
+        {
+            throw;
         }
     }
 
