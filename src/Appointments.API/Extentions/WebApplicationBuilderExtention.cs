@@ -10,6 +10,8 @@ using Appointments.Services.Abstractions.Services;
 using Appointments.Services.BackgroundJobs;
 using Appointments.Services.Services;
 using Hangfire;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace Appointments.API.Extentions;
 
@@ -58,9 +60,26 @@ public static class WebApplicationBuilderExtention
         builder.Services.AddScoped<IAppointmentsNotificationJobService, AppointmentsNotificationJobService>();
         builder.Services.AddScoped<IAppointmentsService, AppointmentsService>();
 
-        builder.Services.AddHttpClient("DocumentsServiceHttpClient", client =>
+        builder.Services.AddHttpClient<DocumentsServiceHttpClient>();
+
+        builder.Services.AddAuthentication("Bearer")
+           .AddJwtBearer("Bearer", options =>
+           {
+               options.Authority = "https://localhost:5005";
+
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateAudience = false
+               };
+           });
+
+        builder.Services.AddAuthorization(options =>
         {
-            client.BaseAddress = new Uri(builder.Configuration["DocumentsServiceUri"]);
+            options.AddPolicy("ApiScope", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim("scope", "appointments.api");
+            });
         });
 
         var bindingParameters = builder.Configuration
@@ -76,8 +95,34 @@ public static class WebApplicationBuilderExtention
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-        builder.Services.AddHttpClient<DocumentsServiceHttpClient>();
+        builder.Services.AddSwaggerGen(opt =>
+        {
+            opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Place to add JWT with Bearer",
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            opt.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Name = "Bearer",
+                    },
+                    new List<string>()
+                }
+            });
+        });
+
         builder.Services.AddHostedService<ConsumerServiceRabbitMq>();
     }
 }

@@ -5,8 +5,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureServices();
 
-builder.ConfigureServices();
-
 var app = builder.Build();
 
 app.UseBackgroundAppointmentApprovedNotificationJob();
@@ -24,5 +22,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapControllers();
+app.MapControllers()
+    .RequireAuthorization("ApiScope");
+
 app.Run();
