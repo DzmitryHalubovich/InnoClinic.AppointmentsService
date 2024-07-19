@@ -1,6 +1,7 @@
 ﻿using Appointments.Contracts;
 using Appointments.Contracts.DTO.Appointment;
 using Appointments.Services.Abstraction;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ public class AppointmentsController : ControllerBase
         _appointmentsService = appointmentsService;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -72,6 +74,7 @@ public class AppointmentsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Patient, Receptionist")]
     [HttpDelete("{id}")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

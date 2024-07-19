@@ -1,5 +1,6 @@
 ﻿using Appointments.Contracts.DTO.Result;
 using Appointments.Services.Abstractions.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +17,7 @@ public class AppointmentResultsController : ControllerBase
         _appointmentResultsService = appointmentResultsService;
     }
 
+    [AllowAnonymous]
     [HttpGet("{id}", Name = "GetResultById")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -27,6 +29,7 @@ public class AppointmentResultsController : ControllerBase
         return Ok(appointmentResult);
     }
 
+    [Authorize(Roles = "Doctor")]
     [HttpPost]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -37,6 +40,7 @@ public class AppointmentResultsController : ControllerBase
         return CreatedAtAction("GetResultById", new { id = createdResultId }, createdResultId);
     }
 
+    [Authorize(Roles = "Doctor")]
     [HttpPut("{id}")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
