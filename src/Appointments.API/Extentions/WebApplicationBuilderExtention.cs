@@ -10,6 +10,7 @@ using Appointments.Services.Abstractions.Services;
 using Appointments.Services.BackgroundJobs;
 using Appointments.Services.Services;
 using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -87,7 +88,9 @@ public static class WebApplicationBuilderExtention
             .Get<BaseBindingQueueParameters>();
 
         builder.Services.AddHangfire(configuration =>
-           configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireSQLConnection")));
+           configuration.UsePostgreSqlStorage(c => 
+                c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("HangfireSQLConnection"))));
+
         builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(1));
 
         builder.Services.AddAutoMapper(typeof(MapperProfile));
