@@ -51,7 +51,7 @@ public static class WebApplicationBuilderExtention
         builder.Services.AddSingleton(serviceDeletedBindingParameters!);
         builder.Services.AddSingleton(serviceChangedToInactive);
 
-        builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection());
+        builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(builder.Configuration));
         builder.Services.AddSingleton<AppointmentsDbContext>();
 
         builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();

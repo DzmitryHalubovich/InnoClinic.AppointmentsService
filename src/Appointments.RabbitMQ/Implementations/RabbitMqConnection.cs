@@ -1,4 +1,5 @@
 ﻿using Appointments.RabbitMQ.Interfaces;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 
 namespace Appointments.RabbitMQ.Implementations;
@@ -9,11 +10,11 @@ public class RabbitMqConnection : IRabbitMqConnection, IDisposable
 
     public IConnection Connection => _connection!;
 
-    public RabbitMqConnection()
+    public RabbitMqConnection(IConfiguration configuration)
     {
         var factory = new ConnectionFactory
         {
-            HostName = "localhost",
+            HostName = configuration.GetSection("RabbitMQ:HostName").Value,
         };
 
         _connection = factory.CreateConnection();

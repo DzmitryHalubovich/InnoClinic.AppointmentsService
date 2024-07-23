@@ -74,7 +74,6 @@ public class AppointmentsController : ControllerBase
         return NoContent();
     }
 
-    [Authorize(Roles = "Patient, Receptionist")]
     [HttpDelete("{id}")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

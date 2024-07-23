@@ -29,7 +29,6 @@ public class AppointmentResultsController : ControllerBase
         return Ok(appointmentResult);
     }
 
-    [Authorize(Roles = "Doctor")]
     [HttpPost]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -40,7 +39,6 @@ public class AppointmentResultsController : ControllerBase
         return CreatedAtAction("GetResultById", new { id = createdResultId }, createdResultId);
     }
 
-    [Authorize(Roles = "Doctor")]
     [HttpPut("{id}")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -22,7 +22,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapControllers()
-    .RequireAuthorization("ApiScope");
+app.MapControllers();
+    //.RequireAuthorization("ApiScope");
 
 app.Run();
