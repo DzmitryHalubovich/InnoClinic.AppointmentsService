@@ -43,6 +43,13 @@ public class AppointmentResultsService : IAppointmentResultsService
 
     public async Task<Guid> CreateAppointmentResultAsync(AppointmentResultCreateDTO newAppointmentResult)
     {
+        var appointment = await _appointmentsRepository.GetByIdAsync(newAppointmentResult.AppointmentId);
+
+        if (appointment is null)
+        {
+            throw new NotFoundException($"Appointment with id = {newAppointmentResult.AppointmentId} was not found");
+        }
+
         var appointmentResult = _mapper.Map<AppointmentResult>(newAppointmentResult);
 
         var createdAppointmentResultId = await _appointmentResultsRepository.CreateAsync(appointmentResult);
@@ -51,7 +58,7 @@ public class AppointmentResultsService : IAppointmentResultsService
 
         try
         {
-            var pdfFile = GeneratePdfFile(newAppointmentResult);
+            var pdfFile = GeneratePdfFile(appointment, appointmentResult);
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 
@@ -60,8 +67,8 @@ public class AppointmentResultsService : IAppointmentResultsService
                 new AppointmentResultCreatedMessage
             {
                 AppointmentResultId = createdAppointmentResultId,
-                PatientEmail = newAppointmentResult.PatientEmail,
-                PatientFullName = newAppointmentResult.PatientFirstName + " " + newAppointmentResult.PatientLastName
+                PatientEmail = appointment.PatientEmail,
+                PatientFullName = appointment.PatientFullName
             });
 
             return createdAppointmentResultId;
@@ -94,31 +101,33 @@ public class AppointmentResultsService : IAppointmentResultsService
 
     public async Task UpdateAppointmentResultAsync(Guid id, AppointmentResultUpdateDTO updatedAppointmentResult)
     {
-        var appointmentResultEntity = await _appointmentResultsRepository.GetByIdAsync(id);
+        var appointmentResult = await _appointmentResultsRepository.GetByIdAsync(id);
 
-        if (appointmentResultEntity is null)
+        if (appointmentResult is null)
         {
             throw new NotFoundException($"Appointment result with id: {id} was not found in the database.");
         }
 
-        var appointmentEntity = await _appointmentsRepository.GetByIdAsync(appointmentResultEntity.AppointmentId);
+        var appointment = await _appointmentsRepository.GetByIdAsync(appointmentResult.AppointmentId);
 
-        if (appointmentEntity is null)
+        if (appointment is null)
         {
             throw new NotFoundException($"Appointment with id: {id} was not found in the database.");
         }
 
-        var backUpResult = appointmentResultEntity;
+        var backUpResult = new AppointmentResult();
 
-        _mapper.Map(updatedAppointmentResult, appointmentResultEntity);
+        _mapper.Map(appointmentResult, backUpResult);
 
-        await _appointmentResultsRepository.UpdateAsync(appointmentResultEntity);
+        _mapper.Map(updatedAppointmentResult, appointmentResult);
 
-        var fileName = appointmentResultEntity.Id;
+        await _appointmentResultsRepository.UpdateAsync(appointmentResult);
+
+        var fileName = appointmentResult.Id;
 
         try
         {
-            var pdfFile = GeneratePdfFile(updatedAppointmentResult);
+            var pdfFile = GeneratePdfFile(appointment, appointmentResult);
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 
@@ -126,9 +135,9 @@ public class AppointmentResultsService : IAppointmentResultsService
                 _bindingAppointmentResultUpdatedParameters,
                 new AppointmentResultUpdatedMessage
             {
-                AppointmentResultId = appointmentResultEntity.Id,
-                PatientEmail = appointmentEntity.PatientEmail,
-                PatientFullName = appointmentEntity.PatientFullName
+                AppointmentResultId = appointmentResult.Id,
+                PatientEmail = appointment.PatientEmail,
+                PatientFullName = appointment.PatientFullName
             });
         }
         catch (HttpRequestException)
@@ -144,17 +153,9 @@ public class AppointmentResultsService : IAppointmentResultsService
     }
 
 
-    private byte[] GeneratePdfFile<T>(T result) where T : AppointmentResultBaseDTO
+    private byte[] GeneratePdfFile(Appointment appointment, AppointmentResult result)
     {
         QuestPDF.Settings.License = LicenseType.Community;
-
-        var patientFullName = string.Join(" ", 
-            new[] { result.PatientFirstName, result.PatientMiddleName, result.PatientLastName }
-            .Where(x => !string.IsNullOrEmpty(x)));
-
-        var doctorFullName = string.Join(" ",
-            new[] { result.DoctorFirstName, result.DoctorMiddleName, result.DoctorLastName }
-            .Where(x => !string.IsNullOrEmpty(x)));
 
         var pdfFile = Document.Create(container =>
         {
@@ -179,22 +180,22 @@ public class AppointmentResultsService : IAppointmentResultsService
                         x.Spacing(4);
 
                         x.Item().Text($"Appointment date:").FontSize(18).SemiBold();
-                        x.Item().Text(result.AppointmentDate.ToString("dd/MM/yyyy HH:mm")).FontColor(Colors.Blue.Darken4);
+                        x.Item().Text(appointment.AppointmentDate.ToString("dd/MM/yyyy HH:mm")).FontColor(Colors.Blue.Darken4);
 
                         x.Item().PaddingTop(10f).Text("Patient's name: ").FontSize(18).SemiBold();
-                        x.Item().Text(patientFullName).FontColor(Colors.Blue.Darken4);
+                        x.Item().Text(appointment.PatientFullName).FontColor(Colors.Blue.Darken4);
 
                         x.Item().PaddingTop(10f).Text("Birth day: ").FontSize(18).SemiBold();
                         x.Item().Text(result.PatientBirthDate.ToShortDateString()).FontColor(Colors.Blue.Darken4);
 
                         x.Item().PaddingTop(10f).Text("Doctor's name: ").FontSize(18).SemiBold();
-                        x.Item().Text(doctorFullName).FontColor(Colors.Blue.Darken4);
+                        x.Item().Text(appointment.AppointmentDate).FontColor(Colors.Blue.Darken4);
 
                         x.Item().PaddingTop(10f).Text("Doctor's specialization: ").FontSize(18).SemiBold();
-                        x.Item().Text(result.DoctorSpecialization).FontColor(Colors.Blue.Darken4);
+                        x.Item().Text(appointment.SpecializationName).FontColor(Colors.Blue.Darken4);
 
                         x.Item().PaddingTop(10f).Text("Service: ").FontSize(18).SemiBold();
-                        x.Item().Text(result.ServiceName).FontColor(Colors.Blue.Darken4);
+                        x.Item().Text(appointment.ServiceName).FontColor(Colors.Blue.Darken4);
 
                         x.Item().PaddingTop(10f).Text("Complaints: ").FontSize(18).SemiBold();
                         x.Item().Text(result.Complaints).FontColor(Colors.Blue.Darken4);

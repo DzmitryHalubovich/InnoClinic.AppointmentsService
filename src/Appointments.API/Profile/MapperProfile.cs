@@ -7,6 +7,8 @@ public class MapperProfile : Profile
 {
     public MapperProfile()
     {
+        CreateMap<AppointmentResult, AppointmentResult>();
+
         CreateMap<AppointmentCreateDTO, Appointment>();
 
         CreateMap<AppointmentUpdateDTO, Appointment>();

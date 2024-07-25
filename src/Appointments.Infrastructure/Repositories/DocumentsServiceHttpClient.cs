@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using Microsoft.Extensions.Configuration;
+using System.Net.Http.Headers;
 
 namespace Appointments.Infrastructure.Repositories;
 
@@ -6,9 +7,10 @@ public class DocumentsServiceHttpClient
 {
     private readonly HttpClient _httpClient;
 
-    public DocumentsServiceHttpClient(HttpClient httpClient)
+    public DocumentsServiceHttpClient(HttpClient httpClient, IConfiguration configuration)
     {
-        httpClient.BaseAddress = new Uri("https://localhost:7208/api/documents");
+
+        httpClient.BaseAddress = new Uri(configuration["DocumentsServiceUri"]);
 
         _httpClient = httpClient;
     }

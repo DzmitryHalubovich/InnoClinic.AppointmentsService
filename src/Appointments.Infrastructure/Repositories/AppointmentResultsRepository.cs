@@ -16,52 +16,65 @@ public class AppointmentResultsRepository : IAppointmentResultsRepository
 
     public async Task<Guid> CreateAsync(AppointmentResult appointmentResult)
     {
-        var query = "INSERT INTO AppointmentResults (AppointmentId, Complaints, Conclusion, Recommendations, AppointmentDate) " +
-                    "VALUES(@AppointmentId, @Complaints, @Conclusion, @Recommendations, @AppointmentDate) RETURNING Id;";
+        var query = "INSERT INTO appointmentResults (\"appointmentId\", " +
+                                                    "\"patientBirthDate\", " +
+                                                    "\"complaints\", " +
+                                                    "\"conclusion\", " +
+                                                    "\"recommendations\") " +
+                    "VALUES(@AppointmentId, " +
+                           "@PatientBirthDate, " +
+                           "@Complaints, " +
+                           "@Conclusion, " +
+                           "@Recommendations) " +
+                    "RETURNING id;";
 
-        using (var connection = _context.CreateConnection())
-        {
-            var createdResultId = await connection.QuerySingleAsync<Guid>(query, appointmentResult);
+        using var connection = _context.CreateConnection();
+        
+        var createdResultId = await connection.QuerySingleAsync<Guid>(query, appointmentResult);
 
-            return createdResultId;
-        }
+        return createdResultId;
     }
 
     public async Task<AppointmentResult?> GetByIdAsync(Guid id)
     {
-        var query = "SELECT Id, AppointmentId, Complaints, Conclusion, Recommendations, AppointmentDate " +
-                    "FROM AppointmentResults ar " +
-                    $"WHERE ar.Id = '{id}' ;";
+        var query = "SELECT * " +
+                    "FROM appointmentResults " +
+                    "WHERE id = @id ;";
 
-        using (var connection = _context.CreateConnection())
-        {
-            var appointmentResult = await connection.QuerySingleOrDefaultAsync<AppointmentResult>(query, new { id });
+        using var connection = _context.CreateConnection();
+        
+        var appointmentResult = await connection.QuerySingleOrDefaultAsync<AppointmentResult>(query, new { id });
 
-            return appointmentResult;
-        }
+        return appointmentResult;
     }
 
     public async Task UpdateAsync(AppointmentResult appointmentResult)
     {
-        var query = "UPDATE AppointmentResults " +
-                    "SET Complaints = @Complaints, Conclusion = @Conclusion, Recommendations = @Recommendations " +
+        var query = "UPDATE appointmentResults SET \"complaints\" = @Complaints, " +
+                                                  "\"patientBirthDate\" = @patientBirthDate, " +
+                                                  "\"conclusion\" = @Conclusion, " +
+                                                  "\"recommendations\" = @Recommendations " +
                     "WHERE Id = @Id";
 
-        using (var connection = _context.CreateConnection())
-        {
-            await connection.QueryAsync(query, 
-                new { appointmentResult.Complaints, appointmentResult.Conclusion, appointmentResult.Recommendations, Id = appointmentResult.Id });
-        }
+        using var connection = _context.CreateConnection();
+        
+        await connection.QueryAsync(query, 
+            new { 
+                appointmentResult.Complaints, 
+                appointmentResult.PatientBirthDate,
+                appointmentResult.Conclusion, 
+                appointmentResult.Recommendations, 
+                appointmentResult.Id 
+            });
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var query = "DELETE from AppointmentResults " +
+        var query = "DELETE from appointmentResults " +
                     "WHERE Id = @id";
 
-        using (var connection = _context.CreateConnection())
-        {
-            await connection.QueryAsync(query, new { id });
-        }
+        using var connection = _context.CreateConnection();
+
+        await connection.QueryAsync(query, new { id });
     }
 }

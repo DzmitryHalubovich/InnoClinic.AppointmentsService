@@ -1,5 +1,4 @@
-﻿using Appointments.Infrastructure.Data;
-using FluentMigrator.Runner;
+﻿using FluentMigrator.Runner;
 
 namespace Appointments.API.Extentions;
 

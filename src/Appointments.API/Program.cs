@@ -12,11 +12,8 @@ builder.ConfigureServices();
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
-
-app.UseBackgroundAppointmentApprovedNotificationJob();
-
+//app.UseBackgroundAppointmentApprovedNotificationJob();
 app.UseHangfireDashboard();
-
 app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.

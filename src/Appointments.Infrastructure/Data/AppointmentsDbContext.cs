@@ -48,8 +48,16 @@ public class AppointmentsDbContext
 
                 connection.Execute(queryCreateDatabase);
             }
-
+            
             using var databaseConnection = CreateConnection();
+
+/*            var collationQuery = @"CREATE COLLATION case_insensitive (
+                                    provider = icu,      
+                                    locale = 'und-u-ks-level2',
+                                    deterministic = false    
+                                   );";
+
+            databaseConnection.Execute(collationQuery);*/
 
             var enambleGuidGeneration = "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";";
 

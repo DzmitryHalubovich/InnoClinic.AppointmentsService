@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Appointments.Domain.Entity;
+﻿namespace Appointments.Domain.Entity;
 
 public class Appointment
 {
@@ -12,24 +10,23 @@ public class Appointment
 
     public int SpecializationId { get; set; }
 
-    [JsonPropertyName("specialization_name")]
-    public string SpecializationName { get; set; }
+    public string SpecializationName { get; set; } = null!;
 
     public Guid PatientId { get; set; }
 
+    public string PatientFullName { get; set; } = null!;
+
+    public string PatientEmail { get; set; } = null!;
+
     public Guid DoctorId { get; set; }
+
+    public string DoctorFullName { get; set; } = null!;
 
     public string OfficeId { get; set; } = null!;
 
     public string OfficeAddress { get; set; } = null!;
 
     public DateTime AppointmentDate { get; set; }
-
-    public string PatientFullName { get; set; }
-
-    public string DoctorFullName { get; set; }
-
-    public string PatientEmail { get; set; } = null!;
 
     public bool IsApproved { get; set; }
 

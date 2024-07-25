@@ -3,6 +3,7 @@ using Appointments.Services.Abstractions.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 namespace Appointments.Presentation.Controllers;
 
@@ -19,7 +20,7 @@ public class AppointmentResultsController : ControllerBase
 
     [AllowAnonymous]
     [HttpGet("{id}", Name = "GetResultById")]
-    [Produces("application/json")]
+    [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetResultById([FromRoute] Guid id)
@@ -30,7 +31,7 @@ public class AppointmentResultsController : ControllerBase
     }
 
     [HttpPost]
-    [Produces("application/json")]
+    [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAppointmentResult([FromBody] AppointmentResultCreateDTO newResult)
     {
@@ -40,7 +41,7 @@ public class AppointmentResultsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Produces("application/json")]
+    [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateResult([FromRoute] Guid id, [FromBody] AppointmentResultUpdateDTO updatedResult)

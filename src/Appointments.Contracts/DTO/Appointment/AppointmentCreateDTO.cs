@@ -10,7 +10,6 @@ public class AppointmentCreateDTO
 
     public int SpecializationId { get; set; }
 
-    [JsonPropertyName("specialization_name")]
     public string SpecializationName { get; set; } = null!;
 
     public Guid PatientId { get; set; }
