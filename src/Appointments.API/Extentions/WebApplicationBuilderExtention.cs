@@ -9,10 +9,13 @@ using Appointments.Services.Abstractions.BackgroundJobs;
 using Appointments.Services.Abstractions.Services;
 using Appointments.Services.BackgroundJobs;
 using Appointments.Services.Services;
+using FluentMigrator.Runner;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Reflection;
 
 namespace Appointments.API.Extentions;
 
@@ -20,6 +23,16 @@ public static class WebApplicationBuilderExtention
 {
     public static void ConfigureServices(this WebApplicationBuilder builder)
     {
+        builder.Host.UseSerilog((ctx, lc) =>
+            lc.WriteTo.Console()
+            .ReadFrom.Configuration(ctx.Configuration));
+
+        builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
+            .AddFluentMigratorCore()
+            .ConfigureRunner(c => c.AddPostgres11_0()
+            .WithGlobalConnectionString(builder.Configuration.GetConnectionString("SQLConnection"))
+            .ScanIn(Assembly.GetAssembly(typeof(InitialTables_202106280001))).For.Migrations());
+
         var appointmentApprovedBindingParameters = builder.Configuration
             .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
             .Get<AppointmentApprovedQueueBindingParameters>();
@@ -53,6 +66,13 @@ public static class WebApplicationBuilderExtention
 
         builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(builder.Configuration));
         builder.Services.AddSingleton<AppointmentsDbContext>();
+
+        var migrationService = new AppointmentsDbContext(builder.Configuration);
+        migrationService.EnsureDatabaseCreated(
+            [
+                builder.Configuration["AppointmentsDbName"],
+                builder.Configuration["HangfireDbName"]
+            ]);
 
         builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();
         builder.Services.AddScoped<IAppointmentResultsService, AppointmentResultsService>();

@@ -3,6 +3,7 @@ using Appointments.Domain.Entity;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Data;
 using Dapper;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Appointments.Infrastructure.Repositories;
@@ -42,7 +43,7 @@ public class AppointmentsRepository : IAppointmentsRepository
 
         if (queryParameters.OnlyApproved is true)
         {
-            query.Append("AND isapproved = true ");
+            query.Append("AND is_approved = true ");
         }
 
         using var connection = _context.CreateConnection();
@@ -54,8 +55,8 @@ public class AppointmentsRepository : IAppointmentsRepository
 
     public async Task<IEnumerable<Appointment>> GetAllApprovedForNotitficationAsync()
     {
-        var query = "SELECT * FROM Appointments a " +
-                    "WHERE a.IsApproved = true and a.NotificationIsSent = false";
+        var query = "SELECT * FROM appointments a " +
+                    "WHERE a.is_approved = true and a.is_notification_sent = false";
 
         using var connection = _context.CreateConnection();
         
@@ -66,8 +67,8 @@ public class AppointmentsRepository : IAppointmentsRepository
 
     public async Task<Appointment?> GetByIdAsync(Guid id)
     {
-        var query = "SELECT * FROM Appointments " +
-                    "WHERE Id = @id";
+        var query = "SELECT * FROM appointments " +
+                    "WHERE id = @id";
 
         using var connection = _context.CreateConnection();
         
@@ -78,12 +79,40 @@ public class AppointmentsRepository : IAppointmentsRepository
 
     public async Task<Guid> CreateAsync(Appointment appointment)
     {
-        var query = "INSERT INTO Appointments (PatientId, DoctorId, ServiceId, OfficeId, SpecializationId, AppointmentDate, PatientEmail, ServiceName, PatientFullName, DoctorFullName)" +
-                    "VALUES(@PatientId, @DoctorId, @ServiceId, @OfficeId, @SpecializationId, @AppointmentDate, @PatientEmail, @ServiceName, @PatientFullName, @DoctorFullName)" + "RETURNING Id;";
+        var parameters = new { appointment.ServiceId, appointment.ServiceName, appointment.SpecializationId, appointment.SpecializationName, appointment.PatientId, appointment.DoctorId, appointment.OfficeId, appointment.OfficeAddress, appointment.AppointmentDate, appointment.PatientFullName, appointment.DoctorFullName, appointment.PatientEmail };
+        var query = "INSERT INTO appointments (service_id, " +
+                                              "service_name, " +
+                                              "specialization_id, " +
+                                              "specialization_name, " +
+                                              "patient_id, " +
+                                              "doctor_id, " +
+                                              "office_id, " +
+                                              "office_address, " +
+                                              "appointment_date, " +
+                                              "patient_full_name, " +
+                                              "doctor_full_name, " +
+                                              "patient_email, " +
+                                              "is_approved, " +
+                                              "is_notification_sent)" +
+                    "VALUES(@ServiceId, " +
+                    "@ServiceName, " +
+                    "@SpecializationId, " +
+                    "@SpecializationName, " +
+                    "@PatientId, " +
+                    "@DoctorId, " +
+                    "@OfficeId, " +
+                    "@OfficeAddress, " +
+                    "@AppointmentDate, " +
+                    "@PatientFullName, " +
+                    "@DoctorFullName, " +
+                    "@PatientEmail, " +
+                    "false, " +
+                    "false) " + 
+                    "RETURNING Id;";
 
         using var connection = _context.CreateConnection();
 
-        var createdAppointmentId = await connection.QuerySingleAsync<Guid>(query, appointment);
+        var createdAppointmentId = await connection.QuerySingleAsync<Guid>(query, parameters);
 
         return createdAppointmentId;
     }

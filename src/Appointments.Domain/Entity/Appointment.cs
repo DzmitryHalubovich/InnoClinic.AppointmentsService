@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.Text.Json.Serialization;
 
 namespace Appointments.Domain.Entity;
 
@@ -7,39 +6,32 @@ public class Appointment
 {
     public Guid Id { get; set; }
 
-    [Required]
-    public Guid PatientId { get; set; }
-
-    [Required]
-    [EmailAddress]
-    public string PatientEmail { get; set; } = null!;
-
-    [Required]
-    public string PatientFullName { get; set; }
-
-    [Required]
-    public Guid DoctorId { get; set; }
-
-    [Required]
-    public string DoctorFullName { get; set; }
-
-    [Required]
-    public string ServiceName { get; set; }
-
-    [Required]
     public int ServiceId { get; set; }
 
-    [Required]
+    public string ServiceName { get; set; } = null!;
+
+    public int SpecializationId { get; set; }
+
+    [JsonPropertyName("specialization_name")]
+    public string SpecializationName { get; set; }
+
+    public Guid PatientId { get; set; }
+
+    public Guid DoctorId { get; set; }
+
     public string OfficeId { get; set; } = null!;
 
-    [Required]
-    public int SpecializationId { get; set; }
+    public string OfficeAddress { get; set; } = null!;
 
     public DateTime AppointmentDate { get; set; }
 
-    [DefaultValue(false)]
+    public string PatientFullName { get; set; }
+
+    public string DoctorFullName { get; set; }
+
+    public string PatientEmail { get; set; } = null!;
+
     public bool IsApproved { get; set; }
 
-    [DefaultValue(false)]
-    public bool NotificationIsSent { get; set; }
+    public bool IsNotificationSent { get; set; }
 }

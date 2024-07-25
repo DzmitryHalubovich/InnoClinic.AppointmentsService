@@ -1,11 +1,17 @@
 using Appointments.API.Extentions;
+using Appointments.Infrastructure.Data;
+using FluentMigrator.Runner;
 using Hangfire;
+using Serilog;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureServices();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 app.UseBackgroundAppointmentApprovedNotificationJob();
 
@@ -23,6 +29,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-    //.RequireAuthorization("ApiScope");
+//.RequireAuthorization("ApiScope");
+
+app.MigrateDatabase();
 
 app.Run();
