@@ -22,27 +22,27 @@ public class AppointmentsRepository : IAppointmentsRepository
 
         if (queryParameters.DoctorId is not null)
         {
-            query.Append("AND doctorId = @DoctorId ");
+            query.Append("AND \"doctorId\" = @DoctorId ");
         }
 
         if (queryParameters.ServiceId is not null)
         {
-            query.Append("AND serviceId = @ServiceId ");
+            query.Append("AND \"serviceId\" = @ServiceId ");
         }
 
         if (queryParameters.PatientId is not null)
         {
-            query.Append("AND patientId = @PatientId ");
+            query.Append("AND \"patientId\" = @PatientId ");
         }
 
         if (queryParameters.OfficeId is not null)
         {
-            query.Append("AND officeId = @OfficeId");
+            query.Append("AND \"officeId\" = @OfficeId");
         }
 
         if (queryParameters.OnlyApproved is true)
         {
-            query.Append("AND isApproved = true ");
+            query.Append("AND \"isApproved\" = true ");
         }
 
         using var connection = _context.CreateConnection();
@@ -54,8 +54,8 @@ public class AppointmentsRepository : IAppointmentsRepository
 
     public async Task<IEnumerable<Appointment>> GetAllApprovedForNotitficationAsync()
     {
-        var query = "SELECT * FROM appointments a " +
-                    "WHERE a.isApproved = true and a.isNotificationSent = false";
+        var query = "SELECT * FROM appointments " +
+                    "WHERE \"isApproved\" = true and \"isNotificationSent\" = false";
 
         using var connection = _context.CreateConnection();
         
@@ -184,7 +184,7 @@ public class AppointmentsRepository : IAppointmentsRepository
 
     public async Task SetNotificationIsSentAsync(IEnumerable<Appointment> appointments)
     {
-        var query = "UPDATE appointments SET isNotificationSent = true WHERE id = @Id";
+        var query = "UPDATE appointments SET \"isNotificationSent\" = true WHERE id = @Id";
 
         using var connection = _context.CreateConnection();
 
