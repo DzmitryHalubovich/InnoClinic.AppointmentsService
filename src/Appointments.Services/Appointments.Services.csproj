@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Appointments.Infrastructure\Appointments.Infrastructure.csproj" />
-    <ProjectReference Include="..\Appointments.RabbitMQ\Appointments.RabbitMQ.csproj" />
     <ProjectReference Include="..\Appointments.Services.Abstractions\Appointments.Services.Abstractions.csproj" />
   </ItemGroup>
 

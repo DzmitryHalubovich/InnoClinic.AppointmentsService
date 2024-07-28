@@ -1,7 +1,5 @@
-using Appointments.API;
 using Appointments.API.Extentions;
-using Appointments.Infrastructure.Data;
-using FluentMigrator.Runner;
+using Appointments.Infrastructure.MassTransit;
 using Hangfire;
 using MassTransit;
 using Serilog;
@@ -32,6 +30,16 @@ builder.Services.AddMassTransit(x =>
         cfg.ReceiveEndpoint("office-updated-profiles", queueConfigurator =>
         {
             queueConfigurator.Consumer<OfficeUpdatedConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint("service-deleted-queue", queueConfigurator =>
+        {
+            queueConfigurator.Consumer<ServiceDeletedConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint("service-set-inactive-queue", queueConfigurator =>
+        {
+            queueConfigurator.Consumer<ServiceStatusChangedToIncativeConsumer>(context);
         });
     });
 });

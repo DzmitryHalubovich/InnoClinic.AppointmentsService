@@ -28,10 +28,8 @@
     <ProjectReference Include="..\Appointments.Domain\Appointments.Domain.csproj" />
     <ProjectReference Include="..\Appointments.Infrastructure\Appointments.Infrastructure.csproj" />
     <ProjectReference Include="..\Appointments.Presentation\Appointments.Presentation.csproj" />
-    <ProjectReference Include="..\Appointments.RabbitMQ\Appointments.RabbitMQ.csproj" />
     <ProjectReference Include="..\Appointments.Services.Abstractions\Appointments.Services.Abstractions.csproj" />
     <ProjectReference Include="..\Appointments.Services\Appointments.Services.csproj" />
-    <ProjectReference Include="..\AppointmentsService.MassTransit\AppointmentsService.MassTransit.csproj" />
   </ItemGroup>
 
 </Project>

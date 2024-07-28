@@ -175,7 +175,7 @@ public class AppointmentsRepository : IAppointmentsRepository
     public async Task DeleteAllForDeletedServiceAsync(int serviceId)
     {
         var query = "DELETE FROM appointments " +
-                    "WHERE serviceId = @serviceId";
+                    "WHERE \"serviceId\" = @serviceId";
 
         using var connection = _context.CreateConnection();
         

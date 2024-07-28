@@ -3,7 +3,7 @@ using Appointments.Domain.Interfaces;
 using InnoClinic.SharedModels.MQMessages.Offices;
 using MassTransit;
 
-namespace Appointments.API;
+namespace Appointments.Infrastructure.MassTransit;
 
 public class OfficeUpdatedConsumer : IConsumer<OfficeUpdatedMessage>
 {

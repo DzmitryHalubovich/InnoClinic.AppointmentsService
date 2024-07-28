@@ -1,9 +1,7 @@
 ﻿using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Data;
+using Appointments.Infrastructure.MassTransit;
 using Appointments.Infrastructure.Repositories;
-using Appointments.RabbitMQ.Implementations;
-using Appointments.RabbitMQ.Interfaces;
-using Appointments.RabbitMQ.QueuesBindingParameters;
 using Appointments.Services.Abstraction;
 using Appointments.Services.Abstractions.BackgroundJobs;
 using Appointments.Services.Abstractions.Services;
@@ -33,38 +31,6 @@ public static class WebApplicationBuilderExtention
             .WithGlobalConnectionString(builder.Configuration.GetConnectionString("SQLConnection"))
             .ScanIn(Assembly.GetAssembly(typeof(InitialTables_202106280001))).For.Migrations());
 
-        var appointmentApprovedBindingParameters = builder.Configuration
-            .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
-            .Get<AppointmentApprovedQueueBindingParameters>();
-
-        var appointmentRemindNotificationBindingParameters = builder.Configuration
-            .GetSection("RabbitMqProducerQueuesParameters:AppointmentNotificationEvent")
-            .Get<AppointmentRemindNotificationQueueBindingParameters>();
-        
-        var appointmentResultUpdatedBindingParameters = builder.Configuration
-            .GetSection("RabbitMqProducerQueuesParameters:AppointmentResultUpdatedEvent")
-            .Get<AppointmentResultUpdatedQueueBindingParameters>();
-
-        var appointmentResultCreatedBindingParameters = builder.Configuration
-            .GetSection("RabbitMqProducerQueuesParameters:AppointmentResultCreatedEvent")
-            .Get<AppointmentResultCreatedQueueBindingParameters>();
-
-        var serviceDeletedBindingParameters = builder.Configuration
-            .GetSection("RabbitMqProducerQueuesParameters:ServiceDeletedEvent")
-            .Get<ServiceDeletedBindingQueueParameters>();
-
-        var serviceChangedToInactive = builder.Configuration
-            .GetSection("RabbitMqProducerQueuesParameters:ServiceStatusSetInactiveEnent")
-            .Get<ServiceStatusSetInactiveBindingQueueParameters>();        
-
-        builder.Services.AddSingleton(appointmentApprovedBindingParameters!);
-        builder.Services.AddSingleton(appointmentRemindNotificationBindingParameters!);
-        builder.Services.AddSingleton(appointmentResultCreatedBindingParameters!);
-        builder.Services.AddSingleton(appointmentResultUpdatedBindingParameters!);
-        builder.Services.AddSingleton(serviceDeletedBindingParameters!);
-        builder.Services.AddSingleton(serviceChangedToInactive);
-
-        builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(builder.Configuration));
         builder.Services.AddSingleton<AppointmentsDbContext>();
 
         var migrationService = new AppointmentsDbContext(builder.Configuration);
@@ -77,9 +43,12 @@ public static class WebApplicationBuilderExtention
         builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();
         builder.Services.AddScoped<IAppointmentResultsService, AppointmentResultsService>();
         builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
-        builder.Services.AddScoped<IPublisherServiceRabbitMq, ProducerServiceRabbitMq>();
         builder.Services.AddScoped<IAppointmentsNotificationJobService, AppointmentsNotificationJobService>();
         builder.Services.AddScoped<IAppointmentsService, AppointmentsService>();
+
+        builder.Services.AddScoped<OfficeUpdatedConsumer>();
+        builder.Services.AddScoped<ServiceDeletedConsumer>();
+        builder.Services.AddScoped<ServiceStatusChangedToIncativeConsumer>();
 
         builder.Services.AddHttpClient<DocumentsServiceHttpClient>();
 
@@ -102,10 +71,6 @@ public static class WebApplicationBuilderExtention
                 policy.RequireClaim("scope", "appointments.api");
             });
         });
-
-        var bindingParameters = builder.Configuration
-            .GetSection("RabbitMqProducerQueuesParameters:AppointmentApprovedEvent")
-            .Get<BaseBindingQueueParameters>();
 
         builder.Services.AddHangfire(configuration =>
            configuration.UsePostgreSqlStorage(c => 
@@ -145,7 +110,5 @@ public static class WebApplicationBuilderExtention
                 }
             });
         });
-
-        builder.Services.AddHostedService<ConsumerServiceRabbitMq>();
     }
 }

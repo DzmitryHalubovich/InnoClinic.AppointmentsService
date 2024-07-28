@@ -1,8 +1,7 @@
 ﻿using Appointments.Domain.Interfaces;
-using Appointments.RabbitMQ.Interfaces;
-using Appointments.RabbitMQ.QueuesBindingParameters;
 using Appointments.Services.Abstractions.BackgroundJobs;
 using InnoClinic.SharedModels.MQMessages.Appointments;
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Appointments.Services.BackgroundJobs;
@@ -11,20 +10,15 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IAppointmentsRepository _appointmentsRepository;
-    private readonly IPublisherServiceRabbitMq _publisherService;
-
-    private readonly AppointmentRemindNotificationQueueBindingParameters _bindingAppointmentRemindNotificationParameters;
+    private readonly IPublishEndpoint _messageProducer;
 
     public AppointmentsNotificationJobService(IServiceProvider serviceProvider, 
         IAppointmentsRepository appointmentsRepository,
-        IPublisherServiceRabbitMq publisherService,
-        AppointmentRemindNotificationQueueBindingParameters bindingApplointmentRemindNotificationParameters)
+        IPublishEndpoint messageProducer)
     {
         _serviceProvider = serviceProvider;
         _appointmentsRepository = appointmentsRepository;
-        _publisherService = publisherService;
-
-        _bindingAppointmentRemindNotificationParameters = bindingApplointmentRemindNotificationParameters;
+        _messageProducer = messageProducer;
     }
 
     public async Task SendMessageWithAllApprovedAppointmentsToNotificationServer()
@@ -42,15 +36,15 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
                 return;
             }
 
-            var publisherService = scope.ServiceProvider.GetRequiredService<IPublisherServiceRabbitMq>();
-
-            publisherService.PublishAppointmentApprovedMessage(approvedAppointmentsList.Select(appointment =>
-                new AppointmentApprovedMessage()
+            foreach (var approvedAppointment in approvedAppointmentsList)
+            {
+                await _messageProducer.Publish<AppointmentApprovedMessage>(new ()
                 {
-                    AppointmentId = appointment.Id,
-                    PatientEmail = appointment.PatientEmail,
-                    AppointmentDate = appointment.AppointmentDate
-                }).ToList());
+                    AppointmentId = approvedAppointment.Id,
+                    PatientEmail = approvedAppointment.PatientEmail,
+                    AppointmentDate = approvedAppointment.AppointmentDate
+                });
+            }
 
             await _appointmentsRepository.SetNotificationIsSentAsync(approvedAppointmentsList);
         }
@@ -59,10 +53,8 @@ public class AppointmentsNotificationJobService : IAppointmentsNotificationJobSe
     public async Task SendNotificationAboutAppointment(Guid id)
     {
         var appointment = await _appointmentsRepository.GetByIdAsync(id);
-        
-        _publisherService.PublishMessage(
-            _bindingAppointmentRemindNotificationParameters, 
-            new AppointmentRemindNotificationMessage()
+
+        await _messageProducer.Publish<AppointmentRemindNotificationMessage>(new()
         {
             PatientEmail = appointment.PatientEmail,
             PatientFullName = appointment.PatientFullName,

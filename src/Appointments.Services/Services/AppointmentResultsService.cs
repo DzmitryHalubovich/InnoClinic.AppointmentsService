@@ -3,11 +3,10 @@ using Appointments.Domain.Entity;
 using Appointments.Domain.Errors;
 using Appointments.Domain.Interfaces;
 using Appointments.Infrastructure.Repositories;
-using Appointments.RabbitMQ.Interfaces;
-using Appointments.RabbitMQ.QueuesBindingParameters;
 using Appointments.Services.Abstractions.Services;
 using AutoMapper;
 using InnoClinic.SharedModels.MQMessages.Appointments;
+using MassTransit;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -16,29 +15,23 @@ namespace Appointments.Services.Services;
 
 public class AppointmentResultsService : IAppointmentResultsService
 {
-    private readonly IPublisherServiceRabbitMq _publisherMqService;
     private readonly IAppointmentResultsRepository _appointmentResultsRepository;
     private readonly IAppointmentsRepository _appointmentsRepository;
     private readonly IMapper _mapper;
     private readonly DocumentsServiceHttpClient _documentsRepository;
-    private readonly AppointmentResultUpdatedQueueBindingParameters _bindingAppointmentResultUpdatedParameters;
-    private readonly AppointmentResultCreatedQueueBindingParameters _bindingAppointmentResultCreatedParameters;
+    private readonly IPublishEndpoint _messagePublisher;
 
     public AppointmentResultsService(IAppointmentResultsRepository appointmentResultsRepository, 
         IMapper mapper,
         DocumentsServiceHttpClient documentsRepository, 
-        IPublisherServiceRabbitMq publisherMqService,
         IAppointmentsRepository appointmentsRepository,
-        AppointmentResultUpdatedQueueBindingParameters bindingAppointmentResultUpdatedParameters,
-        AppointmentResultCreatedQueueBindingParameters bindingAppointmentResultCreatedParameters)
+        IPublishEndpoint messagePublisher)
     {
         _appointmentResultsRepository = appointmentResultsRepository;
         _mapper = mapper;
         _documentsRepository = documentsRepository;
-        _publisherMqService = publisherMqService;
         _appointmentsRepository = appointmentsRepository;
-        _bindingAppointmentResultUpdatedParameters = bindingAppointmentResultUpdatedParameters;
-        _bindingAppointmentResultCreatedParameters = bindingAppointmentResultCreatedParameters;
+        _messagePublisher = messagePublisher;
     }
 
     public async Task<Guid> CreateAppointmentResultAsync(AppointmentResultCreateDTO newAppointmentResult)
@@ -62,9 +55,7 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 
-            _publisherMqService.PublishMessage(
-                _bindingAppointmentResultCreatedParameters,
-                new AppointmentResultCreatedMessage
+            await _messagePublisher.Publish<AppointmentResultCreatedMessage>(new()
             {
                 AppointmentResultId = createdAppointmentResultId,
                 PatientEmail = appointment.PatientEmail,
@@ -131,9 +122,7 @@ public class AppointmentResultsService : IAppointmentResultsService
 
             await _documentsRepository.UploadPdfFileAsync(pdfFile, fileName.ToString());
 
-            _publisherMqService.PublishMessage(
-                _bindingAppointmentResultUpdatedParameters,
-                new AppointmentResultUpdatedMessage
+            await _messagePublisher.Publish<AppointmentResultUpdatedMessage>(new ()
             {
                 AppointmentResultId = appointmentResult.Id,
                 PatientEmail = appointment.PatientEmail,
