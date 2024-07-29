@@ -15,7 +15,6 @@ COPY ["src/Appointments.Domain/Appointments.Domain.csproj", "src/Appointments.Do
 COPY ["src/Appointments.Infrastructure/Appointments.Infrastructure.csproj", "src/Appointments.Infrastructure/"]
 COPY ["src/Appointments.Presentation/Appointments.Presentation.csproj", "src/Appointments.Presentation/"]
 COPY ["src/Appointments.Services.Abstractions/Appointments.Services.Abstractions.csproj", "src/Appointments.Services.Abstractions/"]
-COPY ["src/Appointments.RabbitMQ/Appointments.RabbitMQ.csproj", "src/Appointments.RabbitMQ/"]
 COPY ["src/Appointments.Services/Appointments.Services.csproj", "src/Appointments.Services/"]
 RUN dotnet restore "./src/Appointments.API/Appointments.API.csproj"
 COPY . .
