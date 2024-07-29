@@ -10,6 +10,7 @@ using Appointments.Services.Services;
 using FluentMigrator.Runner;
 using Hangfire;
 using Hangfire.PostgreSql;
+using MassTransit;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -108,6 +109,49 @@ public static class WebApplicationBuilderExtention
                     },
                     new List<string>()
                 }
+            });
+        });
+
+        builder.Services.AddMassTransit(x =>
+        {
+            x.SetKebabCaseEndpointNameFormatter();
+            x.SetInMemorySagaRepositoryProvider();
+
+            var assembly = typeof(Program).Assembly;
+
+            x.AddConsumer<OfficeUpdatedConsumer>();
+            x.AddConsumer<ServiceDeletedConsumer>();
+            x.AddConsumer<ServiceStatusChangedToIncativeConsumer>();
+
+            x.AddSagaStateMachines(assembly);
+            x.AddSagas(assembly);
+            x.AddActivities(assembly);
+
+            var rabbitMqConfiguration = builder.Configuration.GetSection("RabbitMQ")
+                .Get<RabbitMQConfiguration>();
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(rabbitMqConfiguration.HostName, "/", h =>
+                {
+                    h.Username(rabbitMqConfiguration.UserName);
+                    h.Password(rabbitMqConfiguration.Password);
+                });
+
+                cfg.ReceiveEndpoint("office-updated-profiles", queueConfigurator =>
+                {
+                    queueConfigurator.Consumer<OfficeUpdatedConsumer>(context);
+                });
+
+                cfg.ReceiveEndpoint("service-deleted-queue", queueConfigurator =>
+                {
+                    queueConfigurator.Consumer<ServiceDeletedConsumer>(context);
+                });
+
+                cfg.ReceiveEndpoint("service-set-inactive-queue", queueConfigurator =>
+                {
+                    queueConfigurator.Consumer<ServiceStatusChangedToIncativeConsumer>(context);
+                });
             });
         });
     }
