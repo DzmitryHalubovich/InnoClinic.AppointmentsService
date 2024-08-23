@@ -7,8 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Appointments.Contracts\Appointments.Contracts.csproj" />
     <ProjectReference Include="..\Appointments.Services.Abstractions\Appointments.Services.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="PDFsharp" Version="6.1.0" />
   </ItemGroup>
 
 </Project>

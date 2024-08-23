@@ -1,0 +1,158 @@
+﻿using Appointments.Domain.Interfaces;
+using Appointments.Infrastructure.Data;
+using Appointments.Infrastructure.MassTransit;
+using Appointments.Infrastructure.Repositories;
+using Appointments.Services.Abstraction;
+using Appointments.Services.Abstractions.BackgroundJobs;
+using Appointments.Services.Abstractions.Services;
+using Appointments.Services.BackgroundJobs;
+using Appointments.Services.Services;
+using FluentMigrator.Runner;
+using Hangfire;
+using Hangfire.PostgreSql;
+using MassTransit;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Reflection;
+
+namespace Appointments.API.Extentions;
+
+public static class WebApplicationBuilderExtention
+{
+    public static void ConfigureServices(this WebApplicationBuilder builder)
+    {
+        builder.Host.UseSerilog((ctx, lc) =>
+            lc.WriteTo.Console()
+            .ReadFrom.Configuration(ctx.Configuration));
+
+        builder.Services.AddLogging(c => c.AddFluentMigratorConsole())
+            .AddFluentMigratorCore()
+            .ConfigureRunner(c => c.AddPostgres11_0()
+            .WithGlobalConnectionString(builder.Configuration.GetConnectionString("SQLConnection"))
+            .ScanIn(Assembly.GetAssembly(typeof(InitialTables_202106280001))).For.Migrations());
+
+        builder.Services.AddSingleton<AppointmentsDbContext>();
+
+        var migrationService = new AppointmentsDbContext(builder.Configuration);
+        migrationService.EnsureDatabaseCreated(
+            [
+                builder.Configuration["AppointmentsDbName"],
+                builder.Configuration["HangfireDbName"]
+            ]);
+
+        builder.Services.AddScoped<IAppointmentResultsRepository, AppointmentResultsRepository>();
+        builder.Services.AddScoped<IAppointmentResultsService, AppointmentResultsService>();
+        builder.Services.AddScoped<IAppointmentsRepository, AppointmentsRepository>();
+        builder.Services.AddScoped<IAppointmentsNotificationJobService, AppointmentsNotificationJobService>();
+        builder.Services.AddScoped<IAppointmentsService, AppointmentsService>();
+
+        builder.Services.AddScoped<OfficeUpdatedConsumer>();
+        builder.Services.AddScoped<ServiceDeletedConsumer>();
+        builder.Services.AddScoped<ServiceStatusChangedToIncativeConsumer>();
+
+        builder.Services.AddHttpClient<DocumentsServiceHttpClient>();
+
+        builder.Services.AddAuthentication("Bearer")
+           .AddJwtBearer("Bearer", options =>
+           {
+               options.Authority = "https://localhost:5005";
+
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateAudience = false
+               };
+           });
+
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("ApiScope", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim("scope", "appointments.api");
+            });
+        });
+
+        builder.Services.AddHangfire(configuration =>
+           configuration.UsePostgreSqlStorage(c => 
+                c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("HangfireSQLConnection"))));
+
+        builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(1));
+
+        builder.Services.AddAutoMapper(typeof(MapperProfile));
+        builder.Services.AddProblemDetails();
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(opt =>
+        {
+            opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Place to add JWT with Bearer",
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            opt.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Name = "Bearer",
+                    },
+                    new List<string>()
+                }
+            });
+        });
+
+        builder.Services.AddMassTransit(x =>
+        {
+            x.SetKebabCaseEndpointNameFormatter();
+            x.SetInMemorySagaRepositoryProvider();
+
+            var assembly = typeof(Program).Assembly;
+
+            x.AddConsumer<OfficeUpdatedConsumer>();
+            x.AddConsumer<ServiceDeletedConsumer>();
+            x.AddConsumer<ServiceStatusChangedToIncativeConsumer>();
+
+            x.AddSagaStateMachines(assembly);
+            x.AddSagas(assembly);
+            x.AddActivities(assembly);
+
+            var rabbitMqConfiguration = builder.Configuration.GetSection("RabbitMQ")
+                .Get<RabbitMQConfiguration>();
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(rabbitMqConfiguration.HostName, "/", h =>
+                {
+                    h.Username(rabbitMqConfiguration.UserName);
+                    h.Password(rabbitMqConfiguration.Password);
+                });
+
+                cfg.ReceiveEndpoint("office-updated-profiles", queueConfigurator =>
+                {
+                    queueConfigurator.Consumer<OfficeUpdatedConsumer>(context);
+                });
+
+                cfg.ReceiveEndpoint("service-deleted-queue", queueConfigurator =>
+                {
+                    queueConfigurator.Consumer<ServiceDeletedConsumer>(context);
+                });
+
+                cfg.ReceiveEndpoint("service-set-inactive-queue", queueConfigurator =>
+                {
+                    queueConfigurator.Consumer<ServiceStatusChangedToIncativeConsumer>(context);
+                });
+            });
+        });
+    }
+}
